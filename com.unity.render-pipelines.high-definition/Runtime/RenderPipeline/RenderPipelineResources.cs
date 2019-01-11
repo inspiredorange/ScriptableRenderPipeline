@@ -316,6 +316,10 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
 #endif
         };
 
+#if ENABLE_RAYTRACING
+            LoadRayTraceShaders();
+#endif
+
             // Materials
             materials = new MaterialResources
             {
@@ -366,6 +370,21 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
                 textures.coherentRGNoise128[i] = Load<Texture2D>(HDRenderPipelinePath + "RenderPipelineResources/Texture/CoherentNoise128/sample_" + i + "_xy.bmp");
             }
         }
+#if ENABLE_RAYTRACING
+        public void LoadRayTraceShaders()
+        {
+            string HDRenderPipelinePath = HDUtils.GetHDRenderPipelinePath() + "Runtime/";
+            shaders.aoRaytracing = Load<RaytracingShader>(HDRenderPipelinePath + "RenderPipeline/Raytracing/Shaders/RaytracingAmbientOcclusion.raytrace");
+            shaders.reflectionRaytracing = Load<RaytracingShader>(HDRenderPipelinePath + "RenderPipeline/Raytracing/Shaders/RaytracingReflections.raytrace");
+            shaders.shadowsRaytracing = Load<RaytracingShader>(HDRenderPipelinePath + "RenderPipeline/Raytracing/Shaders/RaytracingAreaShadows.raytrace");
+            shaders.areaBillateralFilterCS = Load<ComputeShader>(HDRenderPipelinePath + "RenderPipeline/Raytracing/Shaders/AreaBilateralShadow.compute");
+            shaders.reflectionBilateralFilterCS = Load<ComputeShader>(HDRenderPipelinePath + "RenderPipeline/Raytracing/Shaders/GaussianBilateral.compute");
+            shaders.lightClusterBuildCS = Load<ComputeShader>(HDRenderPipelinePath + "RenderPipeline/Raytracing/Shaders/RaytracingLightCluster.compute");
+            shaders.lightClusterDebugCS = Load<ComputeShader>(HDRenderPipelinePath + "RenderPipeline/Raytracing/Shaders/DebugLightCluster.compute");
+        }
+#endif
 #endif
     }
+
+
 }
