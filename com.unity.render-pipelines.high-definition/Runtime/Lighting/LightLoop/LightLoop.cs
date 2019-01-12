@@ -312,7 +312,7 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
         static ComputeBuffer s_PerTileLogBaseTweak = null;
         static ComputeBuffer s_GlobalLightListAtomic = null;
 
-        static DebugLightVolumes s_lightVolumes = null;
+        static DebugLightVolumes    s_lightVolumes = null;
 
         public enum ClusterPrepassSource : int
         {
@@ -2750,6 +2750,16 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
         public void RenderDebugOverlay(HDCamera hdCamera, CommandBuffer cmd, DebugDisplaySettings debugDisplaySettings, ref float x, ref float y, float overlaySize, float width, CullingResults cullResults)
         {
             LightingDebugSettings lightingDebug = debugDisplaySettings.data.lightingDebugSettings;
+
+#if ENABLE_RAYTRACING
+            if (lightingDebug.rayTracedPass != DebugRayTracedPass.None)
+            {
+                using (new ProfilingSample(cmd, "Raytracing Debug", CustomSamplerId.RaytracingDebug.GetSampler()))
+                {
+
+                }
+            }
+#endif
 
             using (new ProfilingSample(cmd, "Tiled/cluster Lighting Debug", CustomSamplerId.TPTiledLightingDebug.GetSampler()))
             {

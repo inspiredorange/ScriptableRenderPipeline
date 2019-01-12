@@ -63,6 +63,7 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
         RaytracingAmbientOcclusion,
         RaytracingShadowIntegration,
         RaytracingShadowCombination,
+        RaytracingDebug,
 
         // Profile sampler for tile pass
         TPPrepareLightsForGPU,

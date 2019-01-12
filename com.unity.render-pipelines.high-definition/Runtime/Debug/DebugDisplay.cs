@@ -97,6 +97,7 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
             public int shadowDebugModeEnumIndex;
             public int tileClusterDebugByCategoryEnumIndex;
             public int lightVolumeDebugTypeEnumIndex;
+            public int rayTracedPassIndex;
             public int renderingFulscreenDebugModeEnumIndex;
             public int terrainTextureEnumIndex;
             public int colorPickerDebugModeEnumIndex;
@@ -583,6 +584,24 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
                     }
                 });
             }
+#if ENABLE_RAYTRACING
+            list.Add(new DebugUI.BoolField { displayName = "Raytracing Metrics", getter = () => data.lightingDebugSettings.debugRayTrace, setter = value => data.lightingDebugSettings.debugRayTrace = value, onValueChanged = RefreshLightingDebug });
+            if (data.lightingDebugSettings.debugRayTrace)
+            {
+                list.Add(new DebugUI.Container
+                {
+                    children =
+                    {
+                        new DebugUI.EnumField { displayName = "RayTraced Pass",
+                            getter =    ()      => (int)data.lightingDebugSettings.rayTracedPass,
+                            setter =    value   => data.lightingDebugSettings.rayTracedPass = (DebugRayTracedPass)value,
+                            autoEnum =  typeof(DebugRayTracedPass),
+                            getIndex =  ()      => data.rayTracedPassIndex,
+                            setIndex =  value   => data.rayTracedPassIndex = value }
+                    }
+                });
+            }
+#endif
 
             if (DebugNeedsExposure())
                 list.Add(new DebugUI.FloatField { displayName = "Debug Exposure", getter = () => data.lightingDebugSettings.debugExposure, setter = value => data.lightingDebugSettings.debugExposure = value });

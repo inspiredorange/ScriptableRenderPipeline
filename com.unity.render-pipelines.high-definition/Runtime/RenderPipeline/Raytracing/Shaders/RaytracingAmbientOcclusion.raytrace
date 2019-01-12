@@ -24,6 +24,7 @@ Texture2D<float>						_DepthTexture;
 RWTexture2D<float4> 					_AmbientOcclusionTextureRW;
 RWTexture2D<float> 						_RaytracingHitDistanceTexture;
 RWTexture2D<float4> 					_RaytracingVSNormalTexture;
+RWTexture2D<float4>                     _RayCountTexture;
 
 [shader("miss")]
 void MissShaderAmbientOcclusion(inout RayIntersection rayIntersection : SV_RayPayload)
@@ -57,6 +58,10 @@ void RayGenAmbientOcclusion()
 	float depthValue  = _DepthTexture[currentPixelCoord];
 	if(depthValue == 0.0f)
 		return;
+
+    // TODO ifdef debug or something like that
+    _RaytracingDebugBuffer[currentPixelCoord].x = _RaytracingDebugBuffer[currentPixelCoord].x + (float)_RaytracingNumSamples;
+    // endif
 
 	// Convert this to a world space position
 	PositionInputs posInput = GetPositionInput(currentPixelCoord, 1.0/LaunchDim.xy, depthValue, _InvViewProjMatrix, _ViewMatrix, 0);
