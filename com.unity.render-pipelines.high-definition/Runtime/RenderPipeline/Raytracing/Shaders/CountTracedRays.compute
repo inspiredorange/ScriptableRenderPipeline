@@ -1,0 +1,73 @@
+// Shader by @ionut.
+
+
+#pragma kernel CS_CountRays
+
+#pragma only_renderers d3d11
+
+RWTexture2D<uint> RayCountPerPixel;
+RWTexture2D<uint> RayCountTotal;
+
+groupshared uint rayCountPerThreadGroup;
+
+[numthreads(8,8,1)]
+void CS_CountRays(uint3 globalId : SV_DispatchThreadID, uint3 localId : SV_GroupThreadID)
+{
+    // CS_CountRays reads from a texture holding ray count per pixel
+    // and sums first across all pixels in a threadgroup,
+    // and then across all threadgroups. Barriers are used to prevent contention.
+
+	if (localId.x == 0 && localId.y == 0)
+		rayCountPerThreadGroup = 0;
+		
+    GroupMemoryBarrierWithGroupSync();
+	
+	const uint rayCount = RayCountPerPixel[globalId.xy];
+	
+	InterlockedAdd(rayCountPerThreadGroup, rayCount);
+	
+    GroupMemoryBarrierWithGroupSync();
+		
+	if (localId.x == 0 && localId.y == 0)
+		InterlockedAdd(RayCountTotal[uint2(0, 0)], rayCountPerThreadGroup);
+}
+
+#pragma kernel CS_Clear
+
+#pragma only_renderers d3d11
+
+[numthreads(1, 1, 1)]
+void CS_Clear(uint3 globalId : SV_DispatchThreadID)
+{
+    // Since the total must be stored in a texture
+    // to allow random writes, it must be cleared as a
+    // texture. 
+    RayCountTotal[uint2(0, 0)] = 0;
+}
+
+#pragma kernel CS_GetPerformanceInMegaRays
+#pragma kernel CS_GetPerformanceInMegaRayTexture
+
+#pragma only_renderers d3d11
+
+// Async readback supports only float textures
+RWTexture2D<float> RayCountTotalInMegaRayTexture;
+
+[numthreads(1, 1, 1)]
+void CS_GetPerformanceInMegaRayTexture(uint3 globalId : SV_DispatchThreadID)
+{
+    // Converts to megarays. Output is a float in order to use AsyncGPUReadbackRequest to get the value back to the CPU
+    // to write to a text object. 
+    if (globalId.x == 0 && globalId.y == 0)
+        RayCountTotalInMegaRayTexture[uint2(0, 0)] = (float)RayCountTotal[uint2(0, 0)] / (1000.0f * 1000.0f);
+}
+
+int RayCountTotalInMegaRays;
+[numthreads(1, 1, 1)]
+void CS_GetPerformanceInMegaRays(uint3 globalId : SV_DispatchThreadID)
+{
+    // Converts to megarays. Output is a float in order to use AsyncGPUReadbackRequest to get the value back to the CPU
+    // to write to a text object. 
+    if (globalId.x == 0 && globalId.y == 0)
+        RayCountTotalInMegaRays = (float)RayCountTotal[uint2(0, 0)] / (1000.0f * 1000.0f);
+}
