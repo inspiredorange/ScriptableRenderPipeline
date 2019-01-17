@@ -52,8 +52,6 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
         {
             // Clear Total Raycount Texture
             int clearTotalKernel = m_RayCountCompute.FindKernel("CS_ClearTotal");
-            //m_RayCountCompute.SetTexture(clearTotalKernel, _TotalRaysTex, m_TotalRaysTex);
-            //m_RayCountCompute.Dispatch(clearTotalKernel, 1, 1, 1);
             cmd.SetComputeTextureParam(m_RayCountCompute, clearTotalKernel, _TotalRaysTex, m_TotalRaysTex);
             cmd.DispatchCompute(m_RayCountCompute, clearTotalKernel, 1, 1, 1);
 
@@ -66,8 +64,6 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
             int dispatchWidth = 0, dispatchHeight = 0;
             dispatchWidth = (int)((width + groupSizeX - 1) / groupSizeX);
             dispatchHeight = (int)((height + groupSizeY - 1) / groupSizeY);
-            //m_RayCountCompute.SetTexture(clearKernel, HDShaderIDs._RayCountTexture, m_RayCountTex);
-            //m_RayCountCompute.Dispatch(clearKernel, dispatchWidth, dispatchHeight, 1);
             cmd.SetComputeTextureParam(m_RayCountCompute, clearKernel, HDShaderIDs._RayCountTexture, m_RayCountTex);
             cmd.DispatchCompute(m_RayCountCompute, clearKernel, dispatchWidth, dispatchHeight, 1);
         }
@@ -86,27 +82,21 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
                 int dispatchWidth = 0, dispatchHeight = 0;
                 dispatchWidth = (int)((width + groupSizeX - 1) / groupSizeX);
                 dispatchHeight = (int)((height + groupSizeY - 1) / groupSizeY);
-                //m_RayCountCompute.SetTexture(countKernelIdx, HDShaderIDs._RayCountTexture, m_RayCountTex);
-                //m_RayCountCompute.SetTexture(countKernelIdx, _TotalRaysTex, m_TotalRaysTex);
-                //m_RayCountCompute.Dispatch(countKernelIdx, dispatchWidth, dispatchHeight, 1);
                 cmd.SetComputeTextureParam(m_RayCountCompute, countKernelIdx, HDShaderIDs._RayCountTexture, m_RayCountTex);
                 cmd.SetComputeTextureParam(m_RayCountCompute, countKernelIdx, _TotalRaysTex, m_TotalRaysTex);
                 cmd.DispatchCompute(m_RayCountCompute, countKernelIdx, dispatchWidth, dispatchHeight, 1);
 
                 // Convert to MegaRays
                 int convertToMRaysIdx = m_RayCountCompute.FindKernel("CS_GetMegaRaysPerFrameTexture");
-                //m_RayCountCompute.SetTexture(convertToMRaysIdx, _MegaRaysTex, m_TotalMegaRaysTex);
-                //m_RayCountCompute.SetTexture(convertToMRaysIdx, _TotalRaysTex, m_TotalRaysTex);
-                //m_RayCountCompute.Dispatch(convertToMRaysIdx, 1, 1, 1);
                 cmd.SetComputeTextureParam(m_RayCountCompute, convertToMRaysIdx, _MegaRaysTex, m_TotalMegaRaysTex);
                 cmd.SetComputeTextureParam(m_RayCountCompute, convertToMRaysIdx, _TotalRaysTex, m_TotalRaysTex);
                 cmd.DispatchCompute(m_RayCountCompute, convertToMRaysIdx, 1, 1, 1);
 
                 // Draw overlay
+                cmd.SetGlobalTexture(_MegaRaysTex, m_TotalMegaRaysTex);
                 m_DrawRayCount.SetTexture(_MegaRaysTex, m_TotalMegaRaysTex);
                 m_DrawRayCountProperties.SetTexture(_MegaRaysTex, m_TotalMegaRaysTex);
-                CoreUtils.DrawFullScreen(cmd, m_DrawRayCount, m_DrawRayCountProperties, 0);
-                //cmd.DrawProcedural(Matrix4x4.identity, m_DrawRayCount, 0, MeshTopology.Triangles, 3, 1, m_DrawRayCountProperties);
+                CoreUtils.DrawFullScreen(cmd, m_DrawRayCount, m_DrawRayCountProperties);
             }
         }
     }

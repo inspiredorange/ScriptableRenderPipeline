@@ -30,7 +30,7 @@ Shader "Hidden/HDRP/DebugViewRayCount"
             //-------------------------------------------------------------------------------------
 
             //uint _NumMegaRays;
-            RWTexture2D<float> _MegaRaysPerFrameTexture;
+            TEXTURE2D(_MegaRaysPerFrameTexture);
 
             struct Attributes
             {
@@ -75,21 +75,19 @@ Shader "Hidden/HDRP/DebugViewRayCount"
                 int kMaxNumDigits = 5; 
                 if (tileCoord.y < 1 && tileCoord.x < kMaxNumDigits)
                 {
+                    int digitIdx = kMaxNumDigits - (tileCoord.x + 1); 
                     float4 result2 = float4(.1,.1,.1,.9);
                     int2 fontCoord = int2(pixelCoord.x, offsetInTile.y);
 
                     int digit = 0;
-                    int modulo = pow(10, tileCoord.x + 1);
-                    int divisor = pow(10, tileCoord.x);
+                    int modulo = pow(10, digitIdx + 1);
+                    int divisor = pow(10, digitIdx);
                     // digit = (int)floor(fmod((float)_NumMegaRays, 10) / divisor);
-                   // digit = (int)floor(fmod((float)_MegaRaysPerFrameTexture[uint2(0, 0)], 10) / divisor);
-                    digit = (int)_MegaRaysPerFrameTexture[uint2(0, 0)];
+                    digit = (int)floor(fmod((float)_MegaRaysPerFrameTexture[uint2(0, 0)], 10) / divisor);
                     if (SampleDebugFontNumber(offsetInTile, digit))
                         result = float4(0.0, 0.0, 0.0, 1.0);
                     if (SampleDebugFontNumber(offsetInTile + 1, digit))
                         result = float4(1.0, 1.0, 1.0, 1.0);
-
-                    //result = AlphaBlend(result, float4(0.0, .3, .2, .9));
                 }
                 return result;
             }
