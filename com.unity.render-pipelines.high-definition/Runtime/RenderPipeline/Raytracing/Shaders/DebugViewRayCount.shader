@@ -29,7 +29,8 @@ Shader "Hidden/HDRP/DebugViewRayCount"
             // variable declaration
             //-------------------------------------------------------------------------------------
 
-            uint _NumMegaRays;
+            //uint _NumMegaRays;
+            RWTexture2D<float> _MegaRaysPerFrameTexture;
 
             struct Attributes
             {
@@ -67,9 +68,7 @@ Shader "Hidden/HDRP/DebugViewRayCount"
                 uint2 pixelCoord = uint2(input.texcoord.xy * _ScreenSize.xy);
                 int2 tileCoord = (float2)pixelCoord / 16;
                 int2 offsetInTile = pixelCoord - tileCoord * 16;
-
-                int n = 0;
-
+                
                 float4 result = float4(0.0, 0.0, 0.0, 0.0);
                 
                 // Print MRays/frame in corner of screen
@@ -82,14 +81,15 @@ Shader "Hidden/HDRP/DebugViewRayCount"
                     int digit = 0;
                     int modulo = pow(10, tileCoord.x + 1);
                     int divisor = pow(10, tileCoord.x);
-                    digit = (int)floor(fmod((float)_NumMegaRays, 10) / divisor);
-
+                    // digit = (int)floor(fmod((float)_NumMegaRays, 10) / divisor);
+                   // digit = (int)floor(fmod((float)_MegaRaysPerFrameTexture[uint2(0, 0)], 10) / divisor);
+                    digit = (int)_MegaRaysPerFrameTexture[uint2(0, 0)];
                     if (SampleDebugFontNumber(offsetInTile, digit))
                         result = float4(0.0, 0.0, 0.0, 1.0);
                     if (SampleDebugFontNumber(offsetInTile + 1, digit))
                         result = float4(1.0, 1.0, 1.0, 1.0);
 
-                    result = AlphaBlend(result, float4(0.0, .3, .2, .9));
+                    //result = AlphaBlend(result, float4(0.0, .3, .2, .9));
                 }
                 return result;
             }

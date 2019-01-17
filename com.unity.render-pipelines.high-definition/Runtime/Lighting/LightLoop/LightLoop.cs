@@ -2752,13 +2752,8 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
             LightingDebugSettings lightingDebug = debugDisplaySettings.data.lightingDebugSettings;
 
 #if ENABLE_RAYTRACING
-            if (lightingDebug.rayTracedPass != DebugRayTracedPass.None)
-            {
-                using (new ProfilingSample(cmd, "Raytracing Debug", CustomSamplerId.RaytracingDebug.GetSampler()))
-                {
-
-                }
-            }
+            if (lightingDebug.debugRayTrace && (lightingDebug.rayTracedPass != DebugRayTracedPass.None))
+                m_RayTracingManager.debugManager.RenderRayCount(cmd, hdCamera);
 #endif
 
             using (new ProfilingSample(cmd, "Tiled/cluster Lighting Debug", CustomSamplerId.TPTiledLightingDebug.GetSampler()))

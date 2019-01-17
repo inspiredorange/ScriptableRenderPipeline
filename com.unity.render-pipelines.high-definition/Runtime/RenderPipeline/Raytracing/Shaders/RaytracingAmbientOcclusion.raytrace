@@ -60,7 +60,7 @@ void RayGenAmbientOcclusion()
 		return;
 
     // TODO ifdef debug or something like that
-    _RaytracingDebugBuffer[currentPixelCoord].x = _RaytracingDebugBuffer[currentPixelCoord].x + (float)_RaytracingNumSamples;
+    _RayCountTexture[currentPixelCoord].x = _RayCountTexture[currentPixelCoord].x + (float)_RaytracingNumSamples;
     // endif
 
 	// Convert this to a world space position

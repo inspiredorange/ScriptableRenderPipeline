@@ -12,6 +12,14 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
     {
         // The list of raytracing environments that have been registered
         List<HDRaytracingEnvironment> m_Environments = null;
+        RayCountManager m_DebugRayTrace = new RayCountManager();
+        public RayCountManager debugManager
+        {
+            get
+            {
+                return m_DebugRayTrace; 
+            }
+        }
 
         // Flag that defines if we should rebuild everything (when adding or removing an environment)
         bool m_DirtyEnvironment = false;
@@ -223,6 +231,7 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
                 HDRayTracingSubScene currentSubScene = m_SubScenes[m_LayerMasks[subSceneIndex]];
                 DestroySubSceneStructure(ref currentSubScene);
             }
+            m_DebugRayTrace.Release();
         }
 
         public void DestroySubSceneStructure(ref HDRayTracingSubScene subScene)

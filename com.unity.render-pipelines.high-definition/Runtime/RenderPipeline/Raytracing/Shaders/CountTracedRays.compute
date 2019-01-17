@@ -5,8 +5,8 @@
 
 #pragma only_renderers d3d11
 
-RWTexture2D<uint> RayCountPerPixel;
-RWTexture2D<uint> RayCountTotal;
+RWTexture2D<float4> _RayCountTexture;
+RWTexture2D<uint> _TotalRaysTex;
 
 groupshared uint rayCountPerThreadGroup;
 
@@ -22,52 +22,66 @@ void CS_CountRays(uint3 globalId : SV_DispatchThreadID, uint3 localId : SV_Group
 		
     GroupMemoryBarrierWithGroupSync();
 	
-	const uint rayCount = RayCountPerPixel[globalId.xy];
+	const uint rayCount = _RayCountTexture[globalId.xy].x;
 	
 	InterlockedAdd(rayCountPerThreadGroup, rayCount);
 	
     GroupMemoryBarrierWithGroupSync();
 		
 	if (localId.x == 0 && localId.y == 0)
-		InterlockedAdd(RayCountTotal[uint2(0, 0)], rayCountPerThreadGroup);
+		InterlockedAdd(_TotalRaysTex[uint2(0, 0)], rayCountPerThreadGroup);
+}
+
+#pragma kernel CS_ClearTotal
+
+#pragma only_renderers d3d11
+
+[numthreads(1, 1, 1)]
+void CS_ClearTotal(uint3 globalId : SV_DispatchThreadID)
+{
+    // Since the total must be stored in a texture
+    // to allow random writes, it must be cleared as a
+    // texture. 
+    _TotalRaysTex[uint2(0, 0)] = 0;
 }
 
 #pragma kernel CS_Clear
 
 #pragma only_renderers d3d11
 
-[numthreads(1, 1, 1)]
-void CS_Clear(uint3 globalId : SV_DispatchThreadID)
+[numthreads(8, 8, 1)]
+void CS_Clear(uint3 globalId : SV_DispatchThreadID, uint3 localId : SV_GroupThreadID)
 {
     // Since the total must be stored in a texture
     // to allow random writes, it must be cleared as a
     // texture. 
-    RayCountTotal[uint2(0, 0)] = 0;
+    _RayCountTexture[globalId.xy] = 0;
 }
 
-#pragma kernel CS_GetPerformanceInMegaRays
-#pragma kernel CS_GetPerformanceInMegaRayTexture
+#pragma kernel CS_GetMegaRaysPerFrameTexture
 
 #pragma only_renderers d3d11
 
 // Async readback supports only float textures
-RWTexture2D<float> RayCountTotalInMegaRayTexture;
+RWTexture2D<float> _MegaRaysPerFrameTexture;
 
 [numthreads(1, 1, 1)]
-void CS_GetPerformanceInMegaRayTexture(uint3 globalId : SV_DispatchThreadID)
+void CS_GetMegaRaysPerFrameTexture(uint3 globalId : SV_DispatchThreadID)
 {
     // Converts to megarays. Output is a float in order to use AsyncGPUReadbackRequest to get the value back to the CPU
     // to write to a text object. 
     if (globalId.x == 0 && globalId.y == 0)
-        RayCountTotalInMegaRayTexture[uint2(0, 0)] = (float)RayCountTotal[uint2(0, 0)] / (1000.0f * 1000.0f);
+        _MegaRaysPerFrameTexture[uint2(0, 0)] = (float)_TotalRaysTex[uint2(0, 0)] / (1000.0f * 1000.0f);
 }
-
-int RayCountTotalInMegaRays;
-[numthreads(1, 1, 1)]
-void CS_GetPerformanceInMegaRays(uint3 globalId : SV_DispatchThreadID)
-{
-    // Converts to megarays. Output is a float in order to use AsyncGPUReadbackRequest to get the value back to the CPU
-    // to write to a text object. 
-    if (globalId.x == 0 && globalId.y == 0)
-        RayCountTotalInMegaRays = (float)RayCountTotal[uint2(0, 0)] / (1000.0f * 1000.0f);
-}
+//
+//#pragma kernel CS_GetMegaRaysPerFrame
+//#pragma only_renderers d3d11
+//int _MegaRaysPerFrame;
+//[numthreads(1, 1, 1)]
+//void CS_GetMegaRaysPerFrame(uint3 globalId : SV_DispatchThreadID)
+//{
+//    // Converts to megarays. Output is a float in order to use AsyncGPUReadbackRequest to get the value back to the CPU
+//    // to write to a text object. 
+//    if (globalId.x == 0 && globalId.y == 0)
+//        _MegaRaysPerFrame = (float)_TotalRaysTex[uint2(0, 0)] / (1000.0f * 1000.0f);
+//}
