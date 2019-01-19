@@ -2,8 +2,17 @@
 #include "Packages/com.unity.render-pipelines.high-definition/Runtime/ShaderLibrary/ShaderVariables.hlsl"
 #include "Packages/com.unity.render-pipelines.high-definition/Runtime/Material/Builtin/BuiltinData.hlsl"
 
+
+#define SCATTERING 1
+
+#if SCATTERING
+#define TILE_SIZE                   16u
+#else
 #define TILE_SIZE                   32u
+#endif
 #define WAVE_SIZE                   64u
+
+
 
 #ifdef VELOCITY_PREPPING 
 RW_TEXTURE2D(float3, _VelocityAndDepth);
@@ -12,15 +21,20 @@ TEXTURE2D(_VelocityAndDepth);
 #endif
 
 #ifdef GEN_PASS
+RW_TEXTURE2D(uint, _TileToScatterMax);
+RW_TEXTURE2D(uint, _TileToScatterMin);
 RW_TEXTURE2D(float3, _TileMinMaxVel);
 #else
 TEXTURE2D(_TileMinMaxVel);
 #endif
 
 #if NEIGHBOURHOOD_PASS
+RW_TEXTURE2D(uint, _TileToScatterMax);
+RW_TEXTURE2D(uint, _TileToScatterMin);
 RW_TEXTURE2D(float3, _TileMaxNeighbourhood);
+RW_TEXTURE2D(float3, _TileToScatter);
 #else
-TEXTURE2D(_TileMaxNeighbourhood);
+TEXTURE2D(_TileToScatter);
 #endif
 
 

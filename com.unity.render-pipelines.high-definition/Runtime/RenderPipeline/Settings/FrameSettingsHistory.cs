@@ -247,8 +247,8 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
         }
 
         /// <summary>Check if the common frameSettings for SceneViewCamera is already created.</summary>
-        public static bool isRegisteredSceneViewCamera(Camera camera) =>
-            camera.cameraType == CameraType.SceneView && sceneViewCamera != null && frameSettingsHistory.ContainsKey(sceneViewCamera);
+        public static bool isRegisteredSceneViewCamera(Camera camera) => false;
+           // camera.cameraType == CameraType.SceneView && sceneViewCamera != null && frameSettingsHistory.ContainsKey(sceneViewCamera);
 
         /// <summary>Return a copy of the persistently stored data.</summary>
         public static IDebugData GetPersistantDebugDataCopy(Camera camera) => frameSettingsHistory[camera];
