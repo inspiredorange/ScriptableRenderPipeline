@@ -18,9 +18,7 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
     [Serializable]
     public sealed class VisualEnvironment : VolumeComponent
     {
-        [Tooltip("Specifies the type of sky this Volume uses.")]
         public IntParameter skyType = new IntParameter(0);
-        [Tooltip("Specifies the type of fog this Volume uses.")]
         public FogTypeParameter fogType = new FogTypeParameter(FogType.None);
 
         public void PushFogShaderParameters(HDCamera hdCamera, CommandBuffer cmd)
