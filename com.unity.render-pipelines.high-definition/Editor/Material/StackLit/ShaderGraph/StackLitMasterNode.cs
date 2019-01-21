@@ -61,6 +61,9 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
         public const string HazinessSlotName = "Haziness";
         public const string HazeExtentSlotName = "HazeExtent";
         public const string HazyGlossMaxDielectricF0SlotName = "HazyGlossMaxDielectricF0"; // only valid if above option enabled and we have a basecolor + metallic input parametrization
+        
+        public const string LightingSlotName = "Lighting";
+        public const string BackLightingSlotName = "BackLighting";
 
         public const int PositionSlotId = 0;
         public const int BaseColorSlotId = 1;
@@ -98,6 +101,9 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
         public const int HazinessSlotId = 31;
         public const int HazeExtentSlotId = 32;
         public const int HazyGlossMaxDielectricF0SlotId = 33;
+       
+        public const int LightingSlotId = 34;
+        public const int BackLightingSlotId = 35;
 
         // In StackLit.hlsl engine side
         //public enum BaseParametrization
@@ -793,6 +799,11 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
                 AddSlot(new Vector1MaterialSlot(SpecularAAThresholdSlotId, SpecularAAThresholdSlotName, SpecularAAThresholdSlotName, SlotType.Input, 0.0f, ShaderStageCapability.Fragment));
                 validSlots.Add(SpecularAAThresholdSlotId);
             }
+
+            AddSlot(new Vector3MaterialSlot(LightingSlotId, LightingSlotName, LightingSlotName, SlotType.Input, Vector3.zero, ShaderStageCapability.Fragment));
+            validSlots.Add(LightingSlotId);
+            AddSlot(new Vector3MaterialSlot(BackLightingSlotId, BackLightingSlotName, BackLightingSlotName, SlotType.Input, Vector3.zero, ShaderStageCapability.Fragment));
+            validSlots.Add(BackLightingSlotId);
 
             RemoveSlotsNameNotMatching(validSlots, true);
         }

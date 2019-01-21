@@ -92,6 +92,12 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
         public const string AlphaClipThresholdShadowSlotName = "AlphaClipThresholdShadow";
         public const int AlphaClipThresholdShadowSlotId = 23;
 
+        public const string LightingSlotName = "Lighting";
+        public const int LightingSlotId = 24;
+
+        public const string BackLightingSlotName = "BackLighting";
+        public const int BackLightingSlotId = 25;
+
         public enum MaterialType
         {
             KajiyaKay
@@ -131,12 +137,14 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
             SecondarySpecularTint = 1 << SecondarySpecularTintSlotId,
             SecondarySmoothness = 1 << SecondarySmoothnessSlotId,
             SecondarySpecularShift = 1 << SecondarySpecularShiftSlotId,
-            AlphaClipThresholdShadow = 1 << AlphaClipThresholdShadowSlotId
+            AlphaClipThresholdShadow = 1 << AlphaClipThresholdShadowSlotId,
+            Lighting = 1 << LightingSlotId,
+            BackLighting = 1 << BackLightingSlotId
         }
 
         const SlotMask KajiyaKaySlotMask = SlotMask.Position | SlotMask.Albedo | SlotMask.Normal | SlotMask.SpecularOcclusion | SlotMask.BentNormal | SlotMask.Tangent | SlotMask.SubsurfaceMask 
                                             | SlotMask.Thickness | SlotMask.DiffusionProfile | SlotMask.Smoothness | SlotMask.Occlusion | SlotMask.Alpha | SlotMask.AlphaClipThreshold | SlotMask.AlphaClipThresholdDepthPrepass 
-                                                | SlotMask.AlphaClipThresholdDepthPostpass | SlotMask.SpecularTint | SlotMask.SpecularShift | SlotMask.SecondarySpecularTint | SlotMask.SecondarySmoothness | SlotMask.SecondarySpecularShift | SlotMask.AlphaClipThresholdShadow;
+                                                | SlotMask.AlphaClipThresholdDepthPostpass | SlotMask.SpecularTint | SlotMask.SpecularShift | SlotMask.SecondarySpecularTint | SlotMask.SecondarySmoothness | SlotMask.SecondarySpecularShift | SlotMask.AlphaClipThresholdShadow | SlotMask.Lighting;
 
         // This could also be a simple array. For now, catch any mismatched data.
         SlotMask GetActiveSlotMask()
@@ -621,6 +629,13 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
             {
                 AddSlot(new Vector1MaterialSlot(SecondarySpecularShiftSlotId, SecondarySpecularShiftSlotName, SecondarySpecularShiftSlotName, SlotType.Input, 0.5f, ShaderStageCapability.Fragment));
                 validSlots.Add(SecondarySpecularShiftSlotId);
+            }
+            if (MaterialTypeUsesSlotMask(SlotMask.Lighting))
+            {
+                AddSlot(new Vector3MaterialSlot(LightingSlotId, LightingSlotName, LightingSlotName, SlotType.Input, Vector3.zero, ShaderStageCapability.Fragment));
+                validSlots.Add(LightingSlotId);
+                AddSlot(new Vector3MaterialSlot(BackLightingSlotId, BackLightingSlotName, BackLightingSlotName, SlotType.Input, Vector3.zero, ShaderStageCapability.Fragment));
+                validSlots.Add(BackLightingSlotId);
             }
 
             RemoveSlotsNameNotMatching(validSlots, true);

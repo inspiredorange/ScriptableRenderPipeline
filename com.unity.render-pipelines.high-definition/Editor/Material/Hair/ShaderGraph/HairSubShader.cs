@@ -388,6 +388,8 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
                 HairMasterNode.SecondarySpecularTintSlotId,
                 HairMasterNode.SecondarySmoothnessSlotId,
                 HairMasterNode.SecondarySpecularShiftSlotId,
+                HairMasterNode.LightingSlotId,
+                HairMasterNode.BackLightingSlotId,
             },
             VertexShaderSlots = new List<int>()
             {
@@ -621,6 +623,15 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
                 {
                     activeFields.Add("AmbientOcclusion");
                 }   
+            }
+            
+            if (masterNode.IsSlotConnected(HairMasterNode.LightingSlotId))
+            {
+                activeFields.Add("LightingGI");
+            }
+            if (masterNode.IsSlotConnected(HairMasterNode.BackLightingSlotId))
+            {
+                activeFields.Add("BackLightingGI");
             }
 
             return activeFields;

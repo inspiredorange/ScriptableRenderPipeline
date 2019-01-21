@@ -68,6 +68,12 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
 
         public const string BentNormalSlotName = "BentNormal";
         public const int BentNormalSlotId = 15;
+        
+        public const int LightingSlotId = 16;
+        public const string LightingSlotName = "Lighting";
+
+        public const int BackLightingSlotId = 17;
+        public const string BackLightingSlotName = "BackLighting";
 
 
         public enum MaterialType
@@ -104,11 +110,13 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
             Emission = 1 << EmissionSlotId,
             Alpha = 1 << AlphaSlotId,
             AlphaClipThreshold = 1 << AlphaClipThresholdSlotId,
-            BentNormal = 1 << BentNormalSlotId
+            BentNormal = 1 << BentNormalSlotId,
+            Lighting = 1 << LightingSlotId,
+            BackLighting = 1 << BackLightingSlotId
         }
 
-        const SlotMask CottonWoolSlotMask = SlotMask.Position | SlotMask.Albedo | SlotMask.SpecularOcclusion | SlotMask.Normal | SlotMask.Smoothness | SlotMask.Occlusion | SlotMask.Specular | SlotMask.DiffusionProfile | SlotMask.SubsurfaceMask | SlotMask.Thickness | SlotMask.Emission | SlotMask.Alpha | SlotMask.AlphaClipThreshold | SlotMask.BentNormal;
-        const SlotMask SilkSlotMask = SlotMask.Position | SlotMask.Albedo | SlotMask.SpecularOcclusion | SlotMask.Normal | SlotMask.Smoothness | SlotMask.Occlusion | SlotMask.Specular | SlotMask.DiffusionProfile | SlotMask.SubsurfaceMask | SlotMask.Thickness | SlotMask.Tangent | SlotMask.Anisotropy | SlotMask.Emission | SlotMask.Alpha | SlotMask.AlphaClipThreshold | SlotMask.BentNormal;
+        const SlotMask CottonWoolSlotMask = SlotMask.Position | SlotMask.Albedo | SlotMask.SpecularOcclusion | SlotMask.Normal | SlotMask.Smoothness | SlotMask.Occlusion | SlotMask.Specular | SlotMask.DiffusionProfile | SlotMask.SubsurfaceMask | SlotMask.Thickness | SlotMask.Emission | SlotMask.Alpha | SlotMask.AlphaClipThreshold | SlotMask.BentNormal | SlotMask.Lighting;
+        const SlotMask SilkSlotMask = SlotMask.Position | SlotMask.Albedo | SlotMask.SpecularOcclusion | SlotMask.Normal | SlotMask.Smoothness | SlotMask.Occlusion | SlotMask.Specular | SlotMask.DiffusionProfile | SlotMask.SubsurfaceMask | SlotMask.Thickness | SlotMask.Tangent | SlotMask.Anisotropy | SlotMask.Emission | SlotMask.Alpha | SlotMask.AlphaClipThreshold | SlotMask.BentNormal | SlotMask.Lighting;
 
         // This could also be a simple array. For now, catch any mismatched data.
         SlotMask GetActiveSlotMask()
@@ -543,6 +551,14 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
             {
                 AddSlot(new Vector1MaterialSlot(AlphaClipThresholdSlotId, AlphaClipThresholdSlotName, AlphaClipThresholdSlotName, SlotType.Input, 0.0f, ShaderStageCapability.Fragment));
                 validSlots.Add(AlphaClipThresholdSlotId);
+            }
+            
+            if (MaterialTypeUsesSlotMask(SlotMask.Lighting))
+            {
+                AddSlot(new Vector3MaterialSlot(LightingSlotId, LightingSlotName, LightingSlotName, SlotType.Input, Vector3.zero, ShaderStageCapability.Fragment));
+                validSlots.Add(LightingSlotId);
+                AddSlot(new Vector3MaterialSlot(BackLightingSlotId, BackLightingSlotName, BackLightingSlotName, SlotType.Input, Vector3.zero, ShaderStageCapability.Fragment));
+                validSlots.Add(BackLightingSlotId);
             }
 
             RemoveSlotsNameNotMatching(validSlots, true);
