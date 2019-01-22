@@ -2985,6 +2985,11 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
                     HDUtils.NextOverlayCoord(ref x, ref y, overlaySize, overlaySize, hdCamera);
                 }
 
+#if ENABLE_RAYTRACING
+                if (m_CurrentDebugDisplaySettings.data.debugRayTrace && (m_CurrentDebugDisplaySettings.data.countRaysFromPass != DebugRayTracedPass.None))
+                    m_RayTracingManager.debugManager.RenderRayCount(cmd, hdCamera, m_CameraColorBuffer);
+#endif
+
                 m_LightLoop.RenderDebugOverlay(hdCamera, cmd, m_CurrentDebugDisplaySettings, ref x, ref y, overlaySize, hdCamera.actualWidth, cullResults);
                 
                 DecalSystem.instance.RenderDebugOverlay(hdCamera, cmd, m_CurrentDebugDisplaySettings, ref x, ref y, overlaySize, hdCamera.actualWidth);

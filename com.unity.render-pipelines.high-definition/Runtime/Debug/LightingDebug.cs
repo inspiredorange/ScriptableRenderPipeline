@@ -93,8 +93,5 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
 
         public LightLoop.TileClusterDebug tileClusterDebug = LightLoop.TileClusterDebug.None;
         public LightLoop.TileClusterCategoryDebug tileClusterDebugByCategory = LightLoop.TileClusterCategoryDebug.Punctual;
-
-        public bool                 debugRayTrace = false;
-        public DebugRayTracedPass   rayTracedPass = DebugRayTracedPass.None;
     }
 }

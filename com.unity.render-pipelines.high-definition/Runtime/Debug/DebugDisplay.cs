@@ -20,7 +20,6 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
         PreRefractionColorPyramid,
         DepthPyramid,
         FinalColorPyramid,
-        // Raytracing
         LightCluster,
         RaytracedAreaShadow,
         MaxLightingFullScreenDebug,
@@ -81,7 +80,11 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
             public FalseColorDebugSettings falseColorDebugSettings = new FalseColorDebugSettings();
             public DecalsDebugSettings decalsDebugSettings = new DecalsDebugSettings();
             public MSAASamples msaaSamples = MSAASamples.None;
-            
+
+            // Raytracing
+            public bool debugRayTrace = false;
+            public DebugRayTracedPass countRaysFromPass = DebugRayTracedPass.None;
+
             public int debugCameraToFreeze = 0;
 
             //saved enum fields for when repainting
@@ -97,7 +100,7 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
             public int shadowDebugModeEnumIndex;
             public int tileClusterDebugByCategoryEnumIndex;
             public int lightVolumeDebugTypeEnumIndex;
-            public int rayTracedPassIndex;
+            public int countRayPassIndex;
             public int renderingFulscreenDebugModeEnumIndex;
             public int terrainTextureEnumIndex;
             public int colorPickerDebugModeEnumIndex;
@@ -309,12 +312,31 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
 
         void RegisterDisplayStatsDebug()
         {
-            m_DebugDisplayStatsItems = new DebugUI.Widget[]
-            {
-                new DebugUI.Value { displayName = "Frame Rate (fps)", getter = () => 1f / Time.smoothDeltaTime, refreshRate = 1f / 30f },
-                new DebugUI.Value { displayName = "Frame Time (ms)", getter = () => Time.smoothDeltaTime * 1000f, refreshRate = 1f / 30f }
-            };
+            var list = new List<DebugUI.Widget>();
+            list.Add(new DebugUI.Value { displayName = "Frame Rate (fps)", getter = () => 1f / Time.smoothDeltaTime, refreshRate = 1f / 30f });
+            list.Add(new DebugUI.Value { displayName = "Frame Time (ms)", getter = () => Time.smoothDeltaTime * 1000f, refreshRate = 1f / 30f });
 
+
+#if ENABLE_RAYTRACING
+            list.Add(new DebugUI.BoolField { displayName = "Raytracing Metrics", getter = () => data.debugRayTrace, setter = value => data.debugRayTrace = value, onValueChanged = RefreshDisplayStatsDebug });
+            if (data.debugRayTrace)
+            {
+                list.Add(new DebugUI.Container
+                {
+                    children =
+                    {
+                        new DebugUI.EnumField { displayName = "Count Rays From Pass",
+                            getter =    ()      => (int)data.countRaysFromPass,
+                            setter =    value   => data.countRaysFromPass = (DebugRayTracedPass)value,
+                            autoEnum =  typeof(DebugRayTracedPass),
+                            getIndex =  ()      => data.countRayPassIndex,
+                            setIndex =  value   => data.countRayPassIndex = value }
+                    }
+                });
+            }
+#endif
+
+            m_DebugDisplayStatsItems = list.ToArray();
             var panel = DebugManager.instance.GetPanel(k_PanelDisplayStats, true);
             panel.flags = DebugUI.Flags.RuntimeOnly;
             panel.children.Add(m_DebugDisplayStatsItems);
@@ -351,6 +373,11 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
         }
 
         // For now we just rebuild the lighting panel if needed, but ultimately it could be done in a better way
+        void RefreshDisplayStatsDebug<T>(DebugUI.Field<T> field, T value)
+        {
+            UnregisterDebugItems(k_PanelDisplayStats, m_DebugDisplayStatsItems);
+            RegisterDisplayStatsDebug();
+        }
         void RefreshLightingDebug<T>(DebugUI.Field<T> field, T value)
         {
             UnregisterDebugItems(k_PanelLighting, m_DebugLightingItems);
@@ -584,24 +611,6 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
                     }
                 });
             }
-#if ENABLE_RAYTRACING
-            list.Add(new DebugUI.BoolField { displayName = "Raytracing Metrics", getter = () => data.lightingDebugSettings.debugRayTrace, setter = value => data.lightingDebugSettings.debugRayTrace = value, onValueChanged = RefreshLightingDebug });
-            if (data.lightingDebugSettings.debugRayTrace)
-            {
-                list.Add(new DebugUI.Container
-                {
-                    children =
-                    {
-                        new DebugUI.EnumField { displayName = "RayTraced Pass",
-                            getter =    ()      => (int)data.lightingDebugSettings.rayTracedPass,
-                            setter =    value   => data.lightingDebugSettings.rayTracedPass = (DebugRayTracedPass)value,
-                            autoEnum =  typeof(DebugRayTracedPass),
-                            getIndex =  ()      => data.rayTracedPassIndex,
-                            setIndex =  value   => data.rayTracedPassIndex = value }
-                    }
-                });
-            }
-#endif
 
             if (DebugNeedsExposure())
                 list.Add(new DebugUI.FloatField { displayName = "Debug Exposure", getter = () => data.lightingDebugSettings.debugExposure, setter = value => data.lightingDebugSettings.debugExposure = value });
