@@ -4,7 +4,7 @@ void ApplyDoubleSidedFlipOrMirror(inout FragInputs input)
 {
 #ifdef _DOUBLESIDED_ON
     // _DoubleSidedConstants is float3(-1, -1, -1) in flip mode and float3(1, 1, -1) in mirror mode
-    float flipSign = input.isFrontFace ? 1.0 : _DoubleSidedConstants.z;
+    float flipSign = input.isFrontFace ? 1.0 : -1.0;
     // For the 'Flip' mode, we should not modify the tangent and the bitangent (which correspond
     // to the surface derivatives), and instead modify (invert) the displacements.
     input.worldToTangent[2] = flipSign * input.worldToTangent[2]; // normal
@@ -20,7 +20,7 @@ void GetNormalWS(FragInputs input, float3 normalTS, out float3 normalWS)
     // Flip the displacements (the entire surface gradient) in the 'flip normal' mode.
     float flipSign = input.isFrontFace ? 1.0 : _DoubleSidedConstants.x;
     normalTS *= flipSign;
-#endif // _DOUBLESIDED_ON
+#endif
 
     normalWS = SurfaceGradientResolveNormal(input.worldToTangent[2], normalTS);
 
@@ -35,5 +35,6 @@ void GetNormalWS(FragInputs input, float3 normalTS, out float3 normalWS)
 
     // We need to normalize as we use mikkt tangent space and this is expected (tangent space is not normalize)
     normalWS = normalize(TransformTangentToWorld(normalTS, input.worldToTangent));
-#endif
+
+#endif // SURFACE_GRADIENT
 }
