@@ -1551,7 +1551,7 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
                 {
 #if ENABLE_RAYTRACING
                     // Let's render the screen space area light shadows
-                    bool areaShadowsRendered = m_RaytracingShadows.RenderAreaShadows(hdCamera, cmd, renderContext);
+                    bool areaShadowsRendered = m_RaytracingShadows.RenderAreaShadows(hdCamera, cmd, renderContext, m_RayTracingManager.debugManager.rayCountTex);
                     PushFullScreenDebugTexture(hdCamera, cmd, m_RaytracingShadows.GetShadowedIntegrationTexture(), FullScreenDebugMode.RaytracedAreaShadow);
                     if (areaShadowsRendered)
                     {
@@ -2683,7 +2683,7 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
 
             if (m_Asset.renderPipelineSettings.supportRayTracing && rtEnvironement != null && rtEnvironement.raytracedReflections)
             {
-                m_RaytracingReflections.RenderReflections(hdCamera, cmd, m_SsrLightingTexture, renderContext);
+                m_RaytracingReflections.RenderReflections(hdCamera, cmd, m_SsrLightingTexture, renderContext, m_RayTracingManager.debugManager.rayCountTex);
 
                 PushFullScreenDebugTexture(hdCamera, cmd, m_RaytracingReflections.m_LightCluster.m_DebugLightClusterTexture, FullScreenDebugMode.LightCluster);
             }
@@ -2986,8 +2986,8 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
                 }
 
 #if ENABLE_RAYTRACING
-                if (m_CurrentDebugDisplaySettings.data.debugRayTrace && (m_CurrentDebugDisplaySettings.data.countRaysFromPass != DebugRayTracedPass.None))
-                    m_RayTracingManager.debugManager.RenderRayCount(cmd, hdCamera, m_CameraColorBuffer);
+                if (m_CurrentDebugDisplaySettings.data.countRays)
+                    m_RayTracingManager.debugManager.RenderRayCount(cmd, hdCamera, m_CameraColorBuffer); 
 #endif
 
                 m_LightLoop.RenderDebugOverlay(hdCamera, cmd, m_CurrentDebugDisplaySettings, ref x, ref y, overlaySize, hdCamera.actualWidth, cullResults);

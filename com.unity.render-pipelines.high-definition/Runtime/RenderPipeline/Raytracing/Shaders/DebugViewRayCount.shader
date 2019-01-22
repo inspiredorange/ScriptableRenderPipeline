@@ -1,5 +1,10 @@
 Shader "Hidden/HDRP/DebugViewRayCount"
 {
+    Properties
+    {
+        _CameraColorTexture("_CameraColorTexture", 2D) = "white" {}
+        _MegaRaysPerFrameTexture("_MegaRaysPerFrameTexture", 2D) = "black" {}
+    }
     SubShader
     {
         Tags{ "RenderPipeline" = "HDRenderPipeline" }
@@ -73,12 +78,15 @@ Shader "Hidden/HDRP/DebugViewRayCount"
                 {
                     displayTextOffsetY = -DEBUG_FONT_TEXT_HEIGHT;
                 }
-
-                uint2 displayUnormCoord = uint2(displayTextOffsetX, 16.0 + displayTextOffsetY);
+                // AO MRays/Frame
+                uint2 displayUnormCoord = uint2(displayTextOffsetX, abs(displayTextOffsetY) * 4);
                 uint2 unormCoord = input.positionCS.xy;
                 float3 fontColor = float3(1.0, 1.0, 1.0);
                 float4 result = LOAD_TEXTURE2D(_CameraColorTexture, input.texcoord.xy * _ScreenSize.xy); //float4(0.0, 0.0, 0.0, 1.0);
 
+                DrawCharacter('A', fontColor, unormCoord, displayUnormCoord, flipY, result.rgb);
+                DrawCharacter('O', fontColor, unormCoord, displayUnormCoord, flipY, result.rgb);
+                DrawCharacter(':', fontColor, unormCoord, displayUnormCoord, flipY, result.rgb);
                 DrawFloat(_MegaRaysPerFrameTexture[uint2(0, 0)].x, fontColor, unormCoord, displayUnormCoord, flipY, result.rgb);
                 DrawCharacter('M', fontColor, unormCoord, displayUnormCoord, flipY, result.rgb);
                 DrawCharacter('R', fontColor, unormCoord, displayUnormCoord, flipY, result.rgb);
@@ -92,6 +100,75 @@ Shader "Hidden/HDRP/DebugViewRayCount"
                 DrawCharacter('m', fontColor, unormCoord, displayUnormCoord, flipY, result.rgb);
                 DrawCharacter('e', fontColor, unormCoord, displayUnormCoord, flipY, result.rgb);
 
+                displayUnormCoord = uint2(displayTextOffsetX, abs(displayTextOffsetY) * 3);
+                DrawCharacter('R', fontColor, unormCoord, displayUnormCoord, flipY, result.rgb);
+                DrawCharacter('e', fontColor, unormCoord, displayUnormCoord, flipY, result.rgb);
+                DrawCharacter('f', fontColor, unormCoord, displayUnormCoord, flipY, result.rgb);
+                DrawCharacter('l', fontColor, unormCoord, displayUnormCoord, flipY, result.rgb);
+                DrawCharacter('e', fontColor, unormCoord, displayUnormCoord, flipY, result.rgb);
+                DrawCharacter('c', fontColor, unormCoord, displayUnormCoord, flipY, result.rgb);
+                DrawCharacter('t', fontColor, unormCoord, displayUnormCoord, flipY, result.rgb);
+                DrawCharacter('i', fontColor, unormCoord, displayUnormCoord, flipY, result.rgb);
+                DrawCharacter('o', fontColor, unormCoord, displayUnormCoord, flipY, result.rgb);
+                DrawCharacter('n', fontColor, unormCoord, displayUnormCoord, flipY, result.rgb);
+                DrawCharacter(':', fontColor, unormCoord, displayUnormCoord, flipY, result.rgb);
+                DrawFloat(_MegaRaysPerFrameTexture[uint2(0, 0)].y, fontColor, unormCoord, displayUnormCoord, flipY, result.rgb);
+                DrawCharacter('M', fontColor, unormCoord, displayUnormCoord, flipY, result.rgb);
+                DrawCharacter('R', fontColor, unormCoord, displayUnormCoord, flipY, result.rgb);
+                DrawCharacter('a', fontColor, unormCoord, displayUnormCoord, flipY, result.rgb);
+                DrawCharacter('y', fontColor, unormCoord, displayUnormCoord, flipY, result.rgb);
+                DrawCharacter('s', fontColor, unormCoord, displayUnormCoord, flipY, result.rgb);
+                DrawCharacter('/', fontColor, unormCoord, displayUnormCoord, flipY, result.rgb);
+                DrawCharacter('f', fontColor, unormCoord, displayUnormCoord, flipY, result.rgb);
+                DrawCharacter('r', fontColor, unormCoord, displayUnormCoord, flipY, result.rgb);
+                DrawCharacter('a', fontColor, unormCoord, displayUnormCoord, flipY, result.rgb);
+                DrawCharacter('m', fontColor, unormCoord, displayUnormCoord, flipY, result.rgb);
+                DrawCharacter('e', fontColor, unormCoord, displayUnormCoord, flipY, result.rgb);
+
+                displayUnormCoord = uint2(displayTextOffsetX, abs(displayTextOffsetY) * 2);
+                DrawCharacter('A', fontColor, unormCoord, displayUnormCoord, flipY, result.rgb);
+                DrawCharacter('r', fontColor, unormCoord, displayUnormCoord, flipY, result.rgb);
+                DrawCharacter('e', fontColor, unormCoord, displayUnormCoord, flipY, result.rgb);
+                DrawCharacter('a', fontColor, unormCoord, displayUnormCoord, flipY, result.rgb);
+                DrawCharacter('S', fontColor, unormCoord, displayUnormCoord, flipY, result.rgb);
+                DrawCharacter('h', fontColor, unormCoord, displayUnormCoord, flipY, result.rgb);
+                DrawCharacter('a', fontColor, unormCoord, displayUnormCoord, flipY, result.rgb);
+                DrawCharacter('d', fontColor, unormCoord, displayUnormCoord, flipY, result.rgb);
+                DrawCharacter('o', fontColor, unormCoord, displayUnormCoord, flipY, result.rgb);
+                DrawCharacter('w', fontColor, unormCoord, displayUnormCoord, flipY, result.rgb);
+                DrawCharacter(':', fontColor, unormCoord, displayUnormCoord, flipY, result.rgb);
+                DrawFloat(_MegaRaysPerFrameTexture[uint2(0, 0)].z, fontColor, unormCoord, displayUnormCoord, flipY, result.rgb);
+                DrawCharacter('M', fontColor, unormCoord, displayUnormCoord, flipY, result.rgb);
+                DrawCharacter('R', fontColor, unormCoord, displayUnormCoord, flipY, result.rgb);
+                DrawCharacter('a', fontColor, unormCoord, displayUnormCoord, flipY, result.rgb);
+                DrawCharacter('y', fontColor, unormCoord, displayUnormCoord, flipY, result.rgb);
+                DrawCharacter('s', fontColor, unormCoord, displayUnormCoord, flipY, result.rgb);
+                DrawCharacter('/', fontColor, unormCoord, displayUnormCoord, flipY, result.rgb);
+                DrawCharacter('f', fontColor, unormCoord, displayUnormCoord, flipY, result.rgb);
+                DrawCharacter('r', fontColor, unormCoord, displayUnormCoord, flipY, result.rgb);
+                DrawCharacter('a', fontColor, unormCoord, displayUnormCoord, flipY, result.rgb);
+                DrawCharacter('m', fontColor, unormCoord, displayUnormCoord, flipY, result.rgb);
+                DrawCharacter('e', fontColor, unormCoord, displayUnormCoord, flipY, result.rgb);
+
+                displayUnormCoord = uint2(displayTextOffsetX, abs(displayTextOffsetY));
+                DrawCharacter('T', fontColor, unormCoord, displayUnormCoord, flipY, result.rgb);
+                DrawCharacter('o', fontColor, unormCoord, displayUnormCoord, flipY, result.rgb);
+                DrawCharacter('t', fontColor, unormCoord, displayUnormCoord, flipY, result.rgb);
+                DrawCharacter('a', fontColor, unormCoord, displayUnormCoord, flipY, result.rgb);
+                DrawCharacter('l', fontColor, unormCoord, displayUnormCoord, flipY, result.rgb);
+                DrawCharacter(':', fontColor, unormCoord, displayUnormCoord, flipY, result.rgb);
+                DrawFloat(_MegaRaysPerFrameTexture[uint2(0, 0)].w, fontColor, unormCoord, displayUnormCoord, flipY, result.rgb);
+                DrawCharacter('M', fontColor, unormCoord, displayUnormCoord, flipY, result.rgb);
+                DrawCharacter('R', fontColor, unormCoord, displayUnormCoord, flipY, result.rgb);
+                DrawCharacter('a', fontColor, unormCoord, displayUnormCoord, flipY, result.rgb);
+                DrawCharacter('y', fontColor, unormCoord, displayUnormCoord, flipY, result.rgb);
+                DrawCharacter('s', fontColor, unormCoord, displayUnormCoord, flipY, result.rgb);
+                DrawCharacter('/', fontColor, unormCoord, displayUnormCoord, flipY, result.rgb);
+                DrawCharacter('f', fontColor, unormCoord, displayUnormCoord, flipY, result.rgb);
+                DrawCharacter('r', fontColor, unormCoord, displayUnormCoord, flipY, result.rgb);
+                DrawCharacter('a', fontColor, unormCoord, displayUnormCoord, flipY, result.rgb);
+                DrawCharacter('m', fontColor, unormCoord, displayUnormCoord, flipY, result.rgb);
+                DrawCharacter('e', fontColor, unormCoord, displayUnormCoord, flipY, result.rgb);
                 return result;
             }
 

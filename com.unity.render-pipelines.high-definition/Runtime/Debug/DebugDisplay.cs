@@ -82,8 +82,8 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
             public MSAASamples msaaSamples = MSAASamples.None;
 
             // Raytracing
-            public bool debugRayTrace = false;
-            public DebugRayTracedPass countRaysFromPass = DebugRayTracedPass.None;
+            public bool countRays = false;
+            public bool showRayCountTex = false;
 
             public int debugCameraToFreeze = 0;
 
@@ -318,22 +318,7 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
 
 
 #if ENABLE_RAYTRACING
-            list.Add(new DebugUI.BoolField { displayName = "Raytracing Metrics", getter = () => data.debugRayTrace, setter = value => data.debugRayTrace = value, onValueChanged = RefreshDisplayStatsDebug });
-            if (data.debugRayTrace)
-            {
-                list.Add(new DebugUI.Container
-                {
-                    children =
-                    {
-                        new DebugUI.EnumField { displayName = "Count Rays From Pass",
-                            getter =    ()      => (int)data.countRaysFromPass,
-                            setter =    value   => data.countRaysFromPass = (DebugRayTracedPass)value,
-                            autoEnum =  typeof(DebugRayTracedPass),
-                            getIndex =  ()      => data.countRayPassIndex,
-                            setIndex =  value   => data.countRayPassIndex = value }
-                    }
-                });
-            }
+            list.Add(new DebugUI.BoolField { displayName = "Display Ray Count", getter = () => data.countRays, setter = value => data.countRays = value, onValueChanged = RefreshDisplayStatsDebug });
 #endif
 
             m_DebugDisplayStatsItems = list.ToArray();

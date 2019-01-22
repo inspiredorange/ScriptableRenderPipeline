@@ -7,7 +7,9 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
     {
         // Ray count UAV
         RTHandleSystem.RTHandle m_RayCountTex = null;
-        RTHandleSystem.RTHandle m_TotalRaysTex = null;
+        RTHandleSystem.RTHandle m_TotalAORaysTex = null;
+        RTHandleSystem.RTHandle m_TotalReflectionRaysTex = null;
+        RTHandleSystem.RTHandle m_TotalAreaShadowRaysTex = null;
         RTHandleSystem.RTHandle m_TotalMegaRaysTex = null;
         RTHandleSystem.RTHandle m_ColorTexture = null;
         Texture2D s_DebugFontTex = null;
@@ -19,7 +21,9 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
         // Raycount shader
         ComputeShader m_RayCountCompute;
 
-        int _TotalRaysTex = Shader.PropertyToID("_TotalRaysTex");
+        int _TotalAORaysTex = Shader.PropertyToID("_TotalAORaysTex");
+        int _TotalReflectionRaysTex = Shader.PropertyToID("_TotalReflectionRaysTex");
+        int _TotalAreaShadowRaysTex = Shader.PropertyToID("_TotalAreaShadowRaysTex");
         int _MegaRaysPerFrame = Shader.PropertyToID("_MegaRaysPerFrame");
         int _MegaRaysTex = Shader.PropertyToID("_MegaRaysPerFrameTexture");
         int m_CountInMegaRays;
@@ -31,8 +35,10 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
             m_RayCountCompute = renderPipelineResources.shaders.countRays;
             s_DebugFontTex = renderPipelineResources.textures.debugFontTex;
             m_RayCountTex = RTHandles.Alloc(Vector2.one, filterMode: FilterMode.Point, colorFormat: RenderTextureFormat.ARGBHalf, sRGB: false, enableRandomWrite: true, useMipMap: false, name: "RayCountTex");
-            m_TotalRaysTex = RTHandles.Alloc(1, 1, filterMode: FilterMode.Point, colorFormat: RenderTextureFormat.RInt, sRGB: false, enableRandomWrite: true, useMipMap: false, name: "TotalRaysTex");
-            m_TotalMegaRaysTex = RTHandles.Alloc(1, 1, filterMode: FilterMode.Point, colorFormat: RenderTextureFormat.RFloat, sRGB: false, enableRandomWrite: true, useMipMap: false, name: "TotalRaysTex");
+            m_TotalAORaysTex = RTHandles.Alloc(1, 1, filterMode: FilterMode.Point, colorFormat: RenderTextureFormat.RInt, sRGB: false, enableRandomWrite: true, useMipMap: false, name: "TotalAORaysTex");
+            m_TotalReflectionRaysTex = RTHandles.Alloc(1, 1, filterMode: FilterMode.Point, colorFormat: RenderTextureFormat.RInt, sRGB: false, enableRandomWrite: true, useMipMap: false, name: "TotalReflectionRaysTex");
+            m_TotalAreaShadowRaysTex = RTHandles.Alloc(1, 1, filterMode: FilterMode.Point, colorFormat: RenderTextureFormat.RInt, sRGB: false, enableRandomWrite: true, useMipMap: false, name: "TotalAreaShadowRaysTex");
+            m_TotalMegaRaysTex = RTHandles.Alloc(1, 1, filterMode: FilterMode.Point, colorFormat: RenderTextureFormat.ARGBHalf, sRGB: false, enableRandomWrite: true, useMipMap: false, name: "TotalRaysTex");
             // Fixme find a way to mask in shader such that we don't need to copy/paste from camera color buffer
             m_ColorTexture = RTHandles.Alloc(Vector2.one, filterMode: FilterMode.Point, colorFormat: RenderTextureFormat.ARGBHalf, sRGB: false, enableRandomWrite: true, useMipMap: false, name: "CameraColor");
         }
@@ -41,7 +47,9 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
         {
             CoreUtils.Destroy(m_Blit);
             RTHandles.Release(m_RayCountTex);
-            RTHandles.Release(m_TotalRaysTex);
+            RTHandles.Release(m_TotalAORaysTex);
+            RTHandles.Release(m_TotalReflectionRaysTex);
+            RTHandles.Release(m_TotalAreaShadowRaysTex);
             RTHandles.Release(m_TotalMegaRaysTex);
             RTHandles.Release(m_ColorTexture);
         }
@@ -58,7 +66,9 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
         {
             // Clear Total Raycount Texture
             int clearTotalKernel = m_RayCountCompute.FindKernel("CS_ClearTotal");
-            cmd.SetComputeTextureParam(m_RayCountCompute, clearTotalKernel, _TotalRaysTex, m_TotalRaysTex);
+            cmd.SetComputeTextureParam(m_RayCountCompute, clearTotalKernel, _TotalAORaysTex, m_TotalAORaysTex);
+            cmd.SetComputeTextureParam(m_RayCountCompute, clearTotalKernel, _TotalReflectionRaysTex, m_TotalReflectionRaysTex);
+            cmd.SetComputeTextureParam(m_RayCountCompute, clearTotalKernel, _TotalAreaShadowRaysTex, m_TotalAreaShadowRaysTex);
             cmd.DispatchCompute(m_RayCountCompute, clearTotalKernel, 1, 1, 1);
 
             // Clear             
@@ -89,21 +99,23 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
                 dispatchWidth = (int)((width + groupSizeX - 1) / groupSizeX);
                 dispatchHeight = (int)((height + groupSizeY - 1) / groupSizeY);
                 cmd.SetComputeTextureParam(m_RayCountCompute, countKernelIdx, HDShaderIDs._RayCountTexture, m_RayCountTex);
-                cmd.SetComputeTextureParam(m_RayCountCompute, countKernelIdx, _TotalRaysTex, m_TotalRaysTex);
+                cmd.SetComputeTextureParam(m_RayCountCompute, countKernelIdx, _TotalAORaysTex, m_TotalAORaysTex);
+                cmd.SetComputeTextureParam(m_RayCountCompute, countKernelIdx, _TotalReflectionRaysTex, m_TotalReflectionRaysTex);
+                cmd.SetComputeTextureParam(m_RayCountCompute, countKernelIdx, _TotalAreaShadowRaysTex, m_TotalAreaShadowRaysTex);
                 cmd.DispatchCompute(m_RayCountCompute, countKernelIdx, dispatchWidth, dispatchHeight, 1);
 
                 // Convert to MegaRays
                 int convertToMRaysIdx = m_RayCountCompute.FindKernel("CS_GetMegaRaysPerFrameTexture");
                 cmd.SetComputeTextureParam(m_RayCountCompute, convertToMRaysIdx, _MegaRaysTex, m_TotalMegaRaysTex);
-                cmd.SetComputeTextureParam(m_RayCountCompute, convertToMRaysIdx, _TotalRaysTex, m_TotalRaysTex);
+                cmd.SetComputeTextureParam(m_RayCountCompute, convertToMRaysIdx, _TotalAORaysTex, m_TotalAORaysTex);
+                cmd.SetComputeTextureParam(m_RayCountCompute, convertToMRaysIdx, _TotalAreaShadowRaysTex, m_TotalAreaShadowRaysTex);
+                cmd.SetComputeTextureParam(m_RayCountCompute, convertToMRaysIdx, _TotalReflectionRaysTex, m_TotalReflectionRaysTex);
                 cmd.DispatchCompute(m_RayCountCompute, convertToMRaysIdx, 1, 1, 1);
 
                 // Draw overlay
-                cmd.SetGlobalTexture(_MegaRaysTex, m_TotalMegaRaysTex);
-                cmd.SetGlobalTexture(HDShaderIDs._DebugFont, s_DebugFontTex);
-                cmd.SetGlobalTexture(HDShaderIDs._CameraColorTexture, colorTex);
-                m_DrawRayCount.SetTexture(_MegaRaysTex, m_TotalMegaRaysTex);
                 m_DrawRayCountProperties.SetTexture(_MegaRaysTex, m_TotalMegaRaysTex);
+                m_DrawRayCountProperties.SetTexture(HDShaderIDs._CameraColorTexture, colorTex);
+                m_DrawRayCountProperties.SetTexture(HDShaderIDs._DebugFont, s_DebugFontTex);
                 CoreUtils.DrawFullScreen(cmd, m_DrawRayCount, m_DrawRayCountProperties);
             }
         }

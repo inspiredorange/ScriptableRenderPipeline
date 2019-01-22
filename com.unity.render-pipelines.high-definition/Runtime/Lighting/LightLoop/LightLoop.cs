@@ -2750,12 +2750,7 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
         public void RenderDebugOverlay(HDCamera hdCamera, CommandBuffer cmd, DebugDisplaySettings debugDisplaySettings, ref float x, ref float y, float overlaySize, float width, CullingResults cullResults)
         {
             LightingDebugSettings lightingDebug = debugDisplaySettings.data.lightingDebugSettings;
-
-//#if ENABLE_RAYTRACING
-//            if (lightingDebug.debugRayTrace && (lightingDebug.rayTracedPass != DebugRayTracedPass.None))
-//                m_RayTracingManager.debugManager.RenderRayCount(cmd, hdCamera);
-//#endif
-
+            
             using (new ProfilingSample(cmd, "Tiled/cluster Lighting Debug", CustomSamplerId.TPTiledLightingDebug.GetSampler()))
             {
                 if (lightingDebug.tileClusterDebug != LightLoop.TileClusterDebug.None)

@@ -59,9 +59,6 @@ void RayGenAmbientOcclusion()
 	if(depthValue == 0.0f)
 		return;
 
-    // TODO ifdef debug or something like that
-    _RayCountTexture[currentPixelCoord].x = _RayCountTexture[currentPixelCoord].x + (float)_RaytracingNumSamples;
-    // endif
 
 	// Convert this to a world space position
 	PositionInputs posInput = GetPositionInput(currentPixelCoord, 1.0/LaunchDim.xy, depthValue, _InvViewProjMatrix, _ViewMatrix, 0);
@@ -73,6 +70,10 @@ void RayGenAmbientOcclusion()
 	
 	// the number of samples based on the roughness
 	int numSamples = _RaytracingNumSamples;
+
+    // TODO ifdef debug or something like that
+    _RayCountTexture[currentPixelCoord].x = _RayCountTexture[currentPixelCoord].x + (float)numSamples;
+    // endif
 
 	// Variable that accumulate the radiance
 	float3 completeColor = float3(0.0, 0.0, 0.0);

@@ -6,9 +6,15 @@
 #pragma only_renderers d3d11
 
 RWTexture2D<float4> _RayCountTexture;
-RWTexture2D<uint> _TotalRaysTex;
+// Interlocked add can only operate on scalar values,
+// so allocate separate uint textures.
+RWTexture2D<uint> _TotalAORaysTex;
+RWTexture2D<uint> _TotalReflectionRaysTex;
+RWTexture2D<uint> _TotalAreaShadowRaysTex;
 
-groupshared uint rayCountPerThreadGroup;
+groupshared uint aoRayCountPerThreadGroup;
+groupshared uint reflectionRayCountPerThreadGroup;
+groupshared uint areaShadowRayCountPerThreadGroup;
 
 [numthreads(8,8,1)]
 void CS_CountRays(uint3 globalId : SV_DispatchThreadID, uint3 localId : SV_GroupThreadID)
@@ -17,19 +23,31 @@ void CS_CountRays(uint3 globalId : SV_DispatchThreadID, uint3 localId : SV_Group
     // and sums first across all pixels in a threadgroup,
     // and then across all threadgroups. Barriers are used to prevent contention.
 
-	if (localId.x == 0 && localId.y == 0)
-		rayCountPerThreadGroup = 0;
+    if (localId.x == 0 && localId.y == 0)
+    {
+        aoRayCountPerThreadGroup = 0;
+        reflectionRayCountPerThreadGroup = 0;
+        areaShadowRayCountPerThreadGroup = 0;
+    }
 		
     GroupMemoryBarrierWithGroupSync();
 	
-	const uint rayCount = _RayCountTexture[globalId.xy].x;
+    const uint aoRayCount           = _RayCountTexture[globalId.xy].x;
+    const uint reflectionRayCount   = _RayCountTexture[globalId.xy].y;
+    const uint areaShadowRayCount   = _RayCountTexture[globalId.xy].z;
 	
-	InterlockedAdd(rayCountPerThreadGroup, rayCount);
+    InterlockedAdd(aoRayCountPerThreadGroup,            aoRayCount);
+    InterlockedAdd(reflectionRayCountPerThreadGroup,    reflectionRayCount);
+    InterlockedAdd(areaShadowRayCountPerThreadGroup,    areaShadowRayCount);
 	
     GroupMemoryBarrierWithGroupSync();
 		
-	if (localId.x == 0 && localId.y == 0)
-		InterlockedAdd(_TotalRaysTex[uint2(0, 0)], rayCountPerThreadGroup);
+    if (localId.x == 0 && localId.y == 0)
+    {
+        InterlockedAdd(_TotalAORaysTex[uint2(0, 0)], aoRayCountPerThreadGroup);
+        InterlockedAdd(_TotalReflectionRaysTex[uint2(0, 0)], reflectionRayCountPerThreadGroup);
+        InterlockedAdd(_TotalAreaShadowRaysTex[uint2(0, 0)], areaShadowRayCountPerThreadGroup);
+    }
 }
 
 #pragma kernel CS_ClearTotal
@@ -42,7 +60,9 @@ void CS_ClearTotal(uint3 globalId : SV_DispatchThreadID)
     // Since the total must be stored in a texture
     // to allow random writes, it must be cleared as a
     // texture. 
-    _TotalRaysTex[uint2(0, 0)] = 0;
+    _TotalAORaysTex[uint2(0, 0)] = 0;
+    _TotalReflectionRaysTex[uint2(0, 0)] = 0;
+    _TotalAreaShadowRaysTex[uint2(0, 0)] = 0;
 }
 
 #pragma kernel CS_Clear
@@ -55,7 +75,7 @@ void CS_Clear(uint3 globalId : SV_DispatchThreadID, uint3 localId : SV_GroupThre
     // Since the total must be stored in a texture
     // to allow random writes, it must be cleared as a
     // texture. 
-    _RayCountTexture[globalId.xy] = 0;
+    _RayCountTexture[globalId.xy] = float4(0.0, 0.0, 0.0, 0.0);
 }
 
 #pragma kernel CS_GetMegaRaysPerFrameTexture
@@ -63,7 +83,7 @@ void CS_Clear(uint3 globalId : SV_DispatchThreadID, uint3 localId : SV_GroupThre
 #pragma only_renderers d3d11
 
 // Async readback supports only float textures
-RWTexture2D<float> _MegaRaysPerFrameTexture;
+RWTexture2D<float4> _MegaRaysPerFrameTexture;
 
 [numthreads(1, 1, 1)]
 void CS_GetMegaRaysPerFrameTexture(uint3 globalId : SV_DispatchThreadID)
@@ -71,17 +91,10 @@ void CS_GetMegaRaysPerFrameTexture(uint3 globalId : SV_DispatchThreadID)
     // Converts to megarays. Output is a float in order to use AsyncGPUReadbackRequest to get the value back to the CPU
     // to write to a text object. 
     if (globalId.x == 0 && globalId.y == 0)
-        _MegaRaysPerFrameTexture[uint2(0, 0)] = (float)_TotalRaysTex[uint2(0, 0)] / (1000.0f * 1000.0f);
+    {
+        float aoInMRays = _TotalAORaysTex[uint2(0, 0)] / (1000.0f * 1000.0f);
+        float reflectionInMRays = _TotalReflectionRaysTex[uint2(0, 0)] / (1000.0f * 1000.0f);
+        float areaShadowInMRays = _TotalAreaShadowRaysTex[uint2(0, 0)] / (1000.0f * 1000.0f);
+        _MegaRaysPerFrameTexture[uint2(0, 0)] = float4(aoInMRays, reflectionInMRays, areaShadowInMRays, aoInMRays + reflectionInMRays + areaShadowInMRays);
+    }
 }
-//
-//#pragma kernel CS_GetMegaRaysPerFrame
-//#pragma only_renderers d3d11
-//int _MegaRaysPerFrame;
-//[numthreads(1, 1, 1)]
-//void CS_GetMegaRaysPerFrame(uint3 globalId : SV_DispatchThreadID)
-//{
-//    // Converts to megarays. Output is a float in order to use AsyncGPUReadbackRequest to get the value back to the CPU
-//    // to write to a text object. 
-//    if (globalId.x == 0 && globalId.y == 0)
-//        _MegaRaysPerFrame = (float)_TotalRaysTex[uint2(0, 0)] / (1000.0f * 1000.0f);
-//}
