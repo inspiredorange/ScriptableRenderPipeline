@@ -4,6 +4,7 @@ Shader "Hidden/HDRP/DebugViewRayCount"
     {
         _CameraColorTexture("_CameraColorTexture", 2D) = "white" {}
         _MegaRaysPerFrameTexture("_MegaRaysPerFrameTexture", 2D) = "black" {}
+        _FontColor("_FontColor", Color) = (1,1,1,1)
     }
     SubShader
     {
@@ -37,6 +38,7 @@ Shader "Hidden/HDRP/DebugViewRayCount"
             //uint _NumMegaRays;
             TEXTURE2D(_MegaRaysPerFrameTexture);
             TEXTURE2D(_CameraColorTexture);
+            float4 _FontColor;
 
             struct Attributes
             {
@@ -81,7 +83,7 @@ Shader "Hidden/HDRP/DebugViewRayCount"
                 // AO MRays/Frame
                 uint2 displayUnormCoord = uint2(displayTextOffsetX, abs(displayTextOffsetY) * 4);
                 uint2 unormCoord = input.positionCS.xy;
-                float3 fontColor = float3(1.0, 1.0, 1.0);
+                float3 fontColor = _FontColor.rgb;
                 float4 result = LOAD_TEXTURE2D(_CameraColorTexture, input.texcoord.xy * _ScreenSize.xy); //float4(0.0, 0.0, 0.0, 1.0);
 
                 DrawCharacter('A', fontColor, unormCoord, displayUnormCoord, flipY, result.rgb);

@@ -11,7 +11,6 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
         RTHandleSystem.RTHandle m_TotalReflectionRaysTex = null;
         RTHandleSystem.RTHandle m_TotalAreaShadowRaysTex = null;
         RTHandleSystem.RTHandle m_TotalMegaRaysTex = null;
-        RTHandleSystem.RTHandle m_ColorTexture = null;
         Texture2D s_DebugFontTex = null;
 
         // Material used to blit the output texture into the camera render target
@@ -26,6 +25,7 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
         int _TotalAreaShadowRaysTex = Shader.PropertyToID("_TotalAreaShadowRaysTex");
         int _MegaRaysPerFrame = Shader.PropertyToID("_MegaRaysPerFrame");
         int _MegaRaysTex = Shader.PropertyToID("_MegaRaysPerFrameTexture");
+        int _FontColor = Shader.PropertyToID("_FontColor");
         int m_CountInMegaRays;
 
         public void Init(RenderPipelineResources renderPipelineResources)
@@ -39,19 +39,18 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
             m_TotalReflectionRaysTex = RTHandles.Alloc(1, 1, filterMode: FilterMode.Point, colorFormat: RenderTextureFormat.RInt, sRGB: false, enableRandomWrite: true, useMipMap: false, name: "TotalReflectionRaysTex");
             m_TotalAreaShadowRaysTex = RTHandles.Alloc(1, 1, filterMode: FilterMode.Point, colorFormat: RenderTextureFormat.RInt, sRGB: false, enableRandomWrite: true, useMipMap: false, name: "TotalAreaShadowRaysTex");
             m_TotalMegaRaysTex = RTHandles.Alloc(1, 1, filterMode: FilterMode.Point, colorFormat: RenderTextureFormat.ARGBHalf, sRGB: false, enableRandomWrite: true, useMipMap: false, name: "TotalRaysTex");
-            // Fixme find a way to mask in shader such that we don't need to copy/paste from camera color buffer
-            m_ColorTexture = RTHandles.Alloc(Vector2.one, filterMode: FilterMode.Point, colorFormat: RenderTextureFormat.ARGBHalf, sRGB: false, enableRandomWrite: true, useMipMap: false, name: "CameraColor");
         }
 
         public void Release()
         {
             CoreUtils.Destroy(m_Blit);
+            CoreUtils.Destroy(m_DrawRayCount);
+
             RTHandles.Release(m_RayCountTex);
             RTHandles.Release(m_TotalAORaysTex);
             RTHandles.Release(m_TotalReflectionRaysTex);
             RTHandles.Release(m_TotalAreaShadowRaysTex);
             RTHandles.Release(m_TotalMegaRaysTex);
-            RTHandles.Release(m_ColorTexture);
         }
 
         public RTHandleSystem.RTHandle rayCountTex
@@ -84,7 +83,7 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
             cmd.DispatchCompute(m_RayCountCompute, clearKernel, dispatchWidth, dispatchHeight, 1);
         }
 
-        public void RenderRayCount(CommandBuffer cmd, HDCamera camera, RTHandleSystem.RTHandle colorTex)
+        public void RenderRayCount(CommandBuffer cmd, HDCamera camera, RTHandleSystem.RTHandle colorTex, Color fontColor)
         {
             using (new ProfilingSample(cmd, "Raytracing Debug Overlay", CustomSamplerId.RaytracingDebug.GetSampler()))
             {
@@ -116,6 +115,7 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
                 m_DrawRayCountProperties.SetTexture(_MegaRaysTex, m_TotalMegaRaysTex);
                 m_DrawRayCountProperties.SetTexture(HDShaderIDs._CameraColorTexture, colorTex);
                 m_DrawRayCountProperties.SetTexture(HDShaderIDs._DebugFont, s_DebugFontTex);
+                m_DrawRayCountProperties.SetColor(_FontColor, fontColor);
                 CoreUtils.DrawFullScreen(cmd, m_DrawRayCount, m_DrawRayCountProperties);
             }
         }

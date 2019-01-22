@@ -2987,7 +2987,7 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
 
 #if ENABLE_RAYTRACING
                 if (m_CurrentDebugDisplaySettings.data.countRays)
-                    m_RayTracingManager.debugManager.RenderRayCount(cmd, hdCamera, m_CameraColorBuffer); 
+                    m_RayTracingManager.debugManager.RenderRayCount(cmd, hdCamera, m_CameraColorBuffer, m_CurrentDebugDisplaySettings.data.rayCountFontColor); ; 
 #endif
 
                 m_LightLoop.RenderDebugOverlay(hdCamera, cmd, m_CurrentDebugDisplaySettings, ref x, ref y, overlaySize, hdCamera.actualWidth, cullResults);
