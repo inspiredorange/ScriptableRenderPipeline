@@ -424,6 +424,22 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
             }
         }
 
+        [SerializeField]
+        bool m_OverrideLighting;
+
+        public ToggleData overrideLighting
+        {
+            get { return new ToggleData(m_OverrideLighting); }
+            set
+            {
+                if (m_OverrideLighting == value.isOn)
+                    return;
+                m_OverrideLighting = value.isOn;
+                UpdateNodeAfterDeserialization();
+                Dirty(ModificationScope.Topological);
+            }
+        }
+
         public FabricMasterNode()
         {
             UpdateNodeAfterDeserialization();
@@ -553,7 +569,7 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
                 validSlots.Add(AlphaClipThresholdSlotId);
             }
             
-            if (MaterialTypeUsesSlotMask(SlotMask.Lighting))
+            if (MaterialTypeUsesSlotMask(SlotMask.Lighting) && overrideLighting.isOn)
             {
                 AddSlot(new Vector3MaterialSlot(LightingSlotId, LightingSlotName, LightingSlotName, SlotType.Input, Vector3.zero, ShaderStageCapability.Fragment));
                 validSlots.Add(LightingSlotId);

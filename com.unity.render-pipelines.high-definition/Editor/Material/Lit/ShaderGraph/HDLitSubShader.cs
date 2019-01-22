@@ -921,11 +921,11 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
                 }
             }
 
-            if (masterNode.IsSlotConnected(HDLitMasterNode.LightingSlotId))
+            if (masterNode.IsSlotConnected(HDLitMasterNode.LightingSlotId) && pass.PixelShaderUsesSlot(HDLitMasterNode.LightingSlotId))
             {
                 activeFields.Add("LightingGI");
             }
-            if (masterNode.IsSlotConnected(HDLitMasterNode.BackLightingSlotId))
+            if (masterNode.IsSlotConnected(HDLitMasterNode.BackLightingSlotId) && pass.PixelShaderUsesSlot(HDLitMasterNode.LightingSlotId))
             {
                 activeFields.Add("BackLightingGI");
             }

@@ -587,6 +587,22 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
             }
         }
 
+        [SerializeField]
+        bool m_OverrideLighting;
+
+        public ToggleData overrideLighting
+        {
+            get { return new ToggleData(m_OverrideLighting); }
+            set
+            {
+                if (m_OverrideLighting == value.isOn)
+                    return;
+                m_OverrideLighting = value.isOn;
+                UpdateNodeAfterDeserialization();
+                Dirty(ModificationScope.Topological);
+            }
+        }
+
         public HDLitMasterNode()
         {
             UpdateNodeAfterDeserialization();
@@ -755,7 +771,7 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
                 AddSlot(new Vector1MaterialSlot(DistortionBlurSlotId, DistortionBlurSlotName, DistortionBlurSlotName, SlotType.Input, 1.0f, ShaderStageCapability.Fragment));
                 validSlots.Add(DistortionBlurSlotId);
             }
-            if (MaterialTypeUsesSlotMask(SlotMask.Lighting))
+            if (MaterialTypeUsesSlotMask(SlotMask.Lighting) && overrideLighting.isOn)
             {
                 AddSlot(new Vector3MaterialSlot(LightingSlotId, LightingSlotName, LightingSlotName, SlotType.Input, Vector3.zero, ShaderStageCapability.Fragment));
                 validSlots.Add(LightingSlotId);

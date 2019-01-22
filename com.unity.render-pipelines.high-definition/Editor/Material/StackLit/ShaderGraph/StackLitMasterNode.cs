@@ -633,6 +633,22 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
                 Dirty(ModificationScope.Graph);
             }
         }
+        
+        [SerializeField]
+        bool m_OverrideLighting;
+
+        public ToggleData overrideLighting
+        {
+            get { return new ToggleData(m_OverrideLighting); }
+            set
+            {
+                if (m_OverrideLighting == value.isOn)
+                    return;
+                m_OverrideLighting = value.isOn;
+                UpdateNodeAfterDeserialization();
+                Dirty(ModificationScope.Topological);
+            }
+        }
 
         public StackLitMasterNode()
         {
@@ -800,10 +816,13 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
                 validSlots.Add(SpecularAAThresholdSlotId);
             }
 
-            AddSlot(new Vector3MaterialSlot(LightingSlotId, LightingSlotName, LightingSlotName, SlotType.Input, Vector3.zero, ShaderStageCapability.Fragment));
-            validSlots.Add(LightingSlotId);
-            AddSlot(new Vector3MaterialSlot(BackLightingSlotId, BackLightingSlotName, BackLightingSlotName, SlotType.Input, Vector3.zero, ShaderStageCapability.Fragment));
-            validSlots.Add(BackLightingSlotId);
+            if (overrideLighting.isOn)
+            {
+                AddSlot(new Vector3MaterialSlot(LightingSlotId, LightingSlotName, LightingSlotName, SlotType.Input, Vector3.zero, ShaderStageCapability.Fragment));
+                validSlots.Add(LightingSlotId);
+                AddSlot(new Vector3MaterialSlot(BackLightingSlotId, BackLightingSlotName, BackLightingSlotName, SlotType.Input, Vector3.zero, ShaderStageCapability.Fragment));
+                validSlots.Add(BackLightingSlotId);
+            }
 
             RemoveSlotsNameNotMatching(validSlots, true);
         }

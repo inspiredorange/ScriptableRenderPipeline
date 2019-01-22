@@ -193,6 +193,15 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline.Drawing
                 });
             });
 
+            ps.Add(new PropertyRow(CreateLabel("Override Lighting", indentLevel)), (row) =>
+            {
+                row.Add(new Toggle(), (toggle) =>
+                {
+                    toggle.value = m_Node.overrideLighting.isOn;
+                    toggle.OnToggleChanged(ChangeOverrideLighting);
+                });
+            });
+
             Add(ps);
         }
 
@@ -340,6 +349,14 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline.Drawing
 
             m_Node.owner.owner.RegisterCompleteObjectUndo("Specular Occlusion Mode Change");
             m_Node.specularOcclusionMode = (SpecularOcclusionMode)evt.newValue;
+        }
+
+        void ChangeOverrideLighting(ChangeEvent<bool> evt)
+        {
+            m_Node.owner.owner.RegisterCompleteObjectUndo("OverrideLighting Change");
+            ToggleData td = m_Node.overrideLighting;
+            td.isOn = evt.newValue;
+            m_Node.overrideLighting = td;
         }
 
         public AlphaMode GetAlphaMode(HairMasterNode.AlphaModeLit alphaModeLit)

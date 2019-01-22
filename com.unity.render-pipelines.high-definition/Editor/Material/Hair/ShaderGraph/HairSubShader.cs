@@ -625,11 +625,11 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
                 }   
             }
             
-            if (masterNode.IsSlotConnected(HairMasterNode.LightingSlotId))
+            if (masterNode.IsSlotConnected(HairMasterNode.LightingSlotId) && pass.PixelShaderUsesSlot(HairMasterNode.LightingSlotId))
             {
                 activeFields.Add("LightingGI");
             }
-            if (masterNode.IsSlotConnected(HairMasterNode.BackLightingSlotId))
+            if (masterNode.IsSlotConnected(HairMasterNode.BackLightingSlotId) && pass.PixelShaderUsesSlot(HairMasterNode.LightingSlotId))
             {
                 activeFields.Add("BackLightingGI");
             }

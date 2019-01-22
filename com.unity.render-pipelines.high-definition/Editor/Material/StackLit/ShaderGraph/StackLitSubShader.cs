@@ -808,11 +808,11 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
                 activeFields.Add("CoatNormal");
             }
 
-            if (masterNode.IsSlotConnected(StackLitMasterNode.LightingSlotId))
+            if (masterNode.IsSlotConnected(StackLitMasterNode.LightingSlotId)&& pass.PixelShaderUsesSlot(StackLitMasterNode.LightingSlotId))
             {
                 activeFields.Add("LightingGI");
             }
-            if (masterNode.IsSlotConnected(StackLitMasterNode.BackLightingSlotId))
+            if (masterNode.IsSlotConnected(StackLitMasterNode.BackLightingSlotId)&& pass.PixelShaderUsesSlot(StackLitMasterNode.BackLightingSlotId))
             {
                 activeFields.Add("BackLightingGI");
             }

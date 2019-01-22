@@ -311,11 +311,9 @@ $include("SharedCode.template.hlsl")
         // For back lighting we use the oposite vertex normal 
         InitBuiltinData(surfaceDescription.Alpha, bentNormalWS, -fragInputs.worldToTangent[2], fragInputs.positionRWS, fragInputs.texCoord1, fragInputs.texCoord2, builtinData);
         
-#if SHADERPASS == SHADERPASS_FORWARD || SHADERPASS == SHADERPASS_GBUFFER
         // override sampleBakedGI:
         $LightingGI: builtinData.bakeDiffuseLighting = surfaceDescription.Lighting;
         $BackLightingGI: builtinData.backBakeDiffuseLighting = surfaceDescription.BackLighting;
-#endif
 
         $SurfaceDescription.Emission: builtinData.emissiveColor = surfaceDescription.Emission;
 

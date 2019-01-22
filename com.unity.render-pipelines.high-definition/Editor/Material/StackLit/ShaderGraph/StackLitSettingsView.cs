@@ -374,6 +374,15 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline.Drawing
                     toggle.OnToggleChanged(ChangeDebug);
                 });
             });
+            
+            ps.Add(new PropertyRow(CreateLabel("Override Lighting", indentLevel)), (row) =>
+            {
+                row.Add(new Toggle(), (toggle) =>
+                {
+                    toggle.value = m_Node.overrideLighting.isOn;
+                    toggle.OnToggleChanged(ChangeOverrideLighting);
+                });
+            });
 
             --indentLevel; //...Advanced options
 
@@ -598,6 +607,14 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline.Drawing
             ToggleData td = m_Node.anisotropyForAreaLights;
             td.isOn = evt.newValue;
             m_Node.anisotropyForAreaLights = td;
+        }
+
+        void ChangeOverrideLighting(ChangeEvent<bool> evt)
+        {
+            m_Node.owner.owner.RegisterCompleteObjectUndo("OverrideLighting Change");
+            ToggleData td = m_Node.overrideLighting;
+            td.isOn = evt.newValue;
+            m_Node.overrideLighting = td;
         }
 
         void ChangeRecomputeStackPerLight(ChangeEvent<bool> evt)

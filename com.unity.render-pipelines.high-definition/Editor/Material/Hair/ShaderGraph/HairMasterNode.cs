@@ -494,6 +494,21 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
             }
         }
 
+        [SerializeField]
+        bool m_OverrideLighting;
+
+        public ToggleData overrideLighting
+        {
+            get { return new ToggleData(m_OverrideLighting); }
+            set
+            {
+                if (m_OverrideLighting == value.isOn)
+                    return;
+                m_OverrideLighting = value.isOn;
+                UpdateNodeAfterDeserialization();
+                Dirty(ModificationScope.Topological);
+            }
+        }
 
         public HairMasterNode()
         {
@@ -630,7 +645,7 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
                 AddSlot(new Vector1MaterialSlot(SecondarySpecularShiftSlotId, SecondarySpecularShiftSlotName, SecondarySpecularShiftSlotName, SlotType.Input, 0.5f, ShaderStageCapability.Fragment));
                 validSlots.Add(SecondarySpecularShiftSlotId);
             }
-            if (MaterialTypeUsesSlotMask(SlotMask.Lighting))
+            if (MaterialTypeUsesSlotMask(SlotMask.Lighting) && overrideLighting.isOn)
             {
                 AddSlot(new Vector3MaterialSlot(LightingSlotId, LightingSlotName, LightingSlotName, SlotType.Input, Vector3.zero, ShaderStageCapability.Fragment));
                 validSlots.Add(LightingSlotId);
