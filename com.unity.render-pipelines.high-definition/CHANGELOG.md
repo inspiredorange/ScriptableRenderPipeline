@@ -24,6 +24,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Post-processing now uses the generic volume framework
 - New depth-of-field, bloom, panini projection effects (motion blur is currently missing)
 - Exposure is now done as a pre-exposition pass, the whole system has been revamped
+- Exposure now use EV100 everywhere in the UI (Sky, Emissive Light)
+- Add emissive intensity (Luminance and EV100 control) control for Emissive
+- Add pre-exposure weigth for Emissive
+- Add new node in shader graph for Emissive intensity control
 - Added physical camera support where applicable
 - Added more color grading tools
 - Added changelog level for Shader Variant stripping
@@ -76,6 +80,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Fixed geometric normal use for shadow bias with PBR master node in forward
 - Fixed error message when having more than one directional light casting shadow
 - Fixed error when trying to display preview of Camera or PlanarReflectionProbe
+- Fixed double sided "flip mode". Now flip normal are correct
 
 ### Changed
 - ColorPyramid compute shader passes is swapped to pixel shader passes on platforms where the later is faster (Nintendo Switch).
@@ -84,6 +89,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Separated Passthrough from other RenderingPath
 - Update several properties naming and caption based on feedback from documentation team
 - Remove tile shader variant for transparent backface pass of lit shader
+- Added a new dynamic mode for ambient probe and renamed BakingSky to StaticLightingSky
 - Rename all HDRenderPipeline to HDRP folder for shaders
 - Rename decal property label (based on doc team feedback)
 - Add command buffer parameter to all Bind() method of material
