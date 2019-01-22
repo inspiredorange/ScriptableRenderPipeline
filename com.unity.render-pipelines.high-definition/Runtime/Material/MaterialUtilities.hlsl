@@ -3,8 +3,9 @@
 void ApplyDoubleSidedFlipOrMirror(inout FragInputs input)
 {
 #ifdef _DOUBLESIDED_ON
-    // _DoubleSidedConstants is float3(-1, -1, -1) in flip mode and float3(1, 1, -1) in mirror mode
-    float flipSign = input.isFrontFace ? 1.0 : -1.0;
+    // _DoubleSidedConstants is float3(-1, -1, -1) in flip mode and float3(1, 1, -1) in mirror mode.
+    // It's 1 in the none mode.
+    float flipSign = input.isFrontFace ? 1.0 : _DoubleSidedConstants.z;
     // For the 'Flip' mode, we should not modify the tangent and the bitangent (which correspond
     // to the surface derivatives), and instead modify (invert) the displacements.
     input.worldToTangent[2] = flipSign * input.worldToTangent[2]; // normal
