@@ -66,6 +66,7 @@ Shader "Hidden/HDRP/DebugViewRayCount"
                 int displayTextOffsetY;
                 if (flipY)
                 {
+                    input.texcoord.y = 1.0 - input.texcoord.y;
                     displayTextOffsetY = DEBUG_FONT_TEXT_HEIGHT;
                 }
                 else
@@ -76,7 +77,7 @@ Shader "Hidden/HDRP/DebugViewRayCount"
                 uint2 displayUnormCoord = uint2(displayTextOffsetX, 16.0 + displayTextOffsetY);
                 uint2 unormCoord = input.positionCS.xy;
                 float3 fontColor = float3(1.0, 1.0, 1.0);
-                float4 result = LOAD_TEXTURE2D(_CameraColorTexture, input.texcoord.xy); //float4(0.0, 0.0, 0.0, 1.0);
+                float4 result = LOAD_TEXTURE2D(_CameraColorTexture, input.texcoord.xy * _ScreenSize.xy); //float4(0.0, 0.0, 0.0, 1.0);
 
                 DrawFloat(_MegaRaysPerFrameTexture[uint2(0, 0)].x, fontColor, unormCoord, displayUnormCoord, flipY, result.rgb);
                 DrawCharacter('M', fontColor, unormCoord, displayUnormCoord, flipY, result.rgb);
@@ -90,31 +91,7 @@ Shader "Hidden/HDRP/DebugViewRayCount"
                 DrawCharacter('a', fontColor, unormCoord, displayUnormCoord, flipY, result.rgb);
                 DrawCharacter('m', fontColor, unormCoord, displayUnormCoord, flipY, result.rgb);
                 DrawCharacter('e', fontColor, unormCoord, displayUnormCoord, flipY, result.rgb);
-                //// For debug shaders, Viewport can be at a non zero (x,y) but the pipeline render targets all starts at (0,0)
-                //// input.positionCS in in pixel coordinate relative to the render target origin so they will be offsted compared to internal render textures
-                //// To solve that, we compute pixel coordinates from full screen quad texture coordinates which start correctly at (0,0)
-                //uint2 pixelCoord = uint2(input.texcoord.xy * _ScreenSize.xy);
-                //int2 tileCoord = (float2)pixelCoord / 16;
-                //int2 offsetInTile = pixelCoord - tileCoord * 16;
-                //
-                //// Print MRays/frame in corner of screen
-                //int kMaxNumDigits = 5; 
-                //if (tileCoord.y < 1 && tileCoord.x < kMaxNumDigits)
-                //{
-                //    int digitIdx = kMaxNumDigits - (tileCoord.x + 1); 
-                //    float4 result2 = float4(.1,.1,.1,.9);
-                //    int2 fontCoord = int2(pixelCoord.x, offsetInTile.y);
 
-                //    int digit = 0;
-                //    int modulo = pow(10, digitIdx + 1);
-                //    int divisor = pow(10, digitIdx);
-                //    // digit = (int)floor(fmod((float)_NumMegaRays, 10) / divisor);
-                //    digit = (int)floor(fmod((float)_MegaRaysPerFrameTexture[uint2(0, 0)], 10) / divisor);
-                //    if (SampleDebugFontNumber(offsetInTile, digit))
-                //        result = float4(0.0, 0.0, 0.0, 1.0);
-                //    if (SampleDebugFontNumber(offsetInTile + 1, digit))
-                //        result = float4(1.0, 1.0, 1.0, 1.0);
-                //}
                 return result;
             }
 
