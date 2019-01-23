@@ -22,7 +22,7 @@ Texture2D<float>						_DepthTexture;
 
 // Output structure of the reflection raytrace shader
 RWTexture2D<float4> 					_SsrLightingTextureRW;
-RWTexture2D<float4>                     _RayCountTexture;
+RWTexture2D<uint4>                      _RayCountTexture;
 
 [shader("miss")]
 void MissShaderReflections(inout RayIntersection rayIntersection : SV_RayPayload)
@@ -80,7 +80,7 @@ void RayGenReflections()
 	int numSamples = lerp(1, _RaytracingNumSamples, sqrt(normalData.perceptualRoughness));
     
     // TODO ifdef debug or something like that
-    _RayCountTexture[currentPixelCoord].y = _RayCountTexture[currentPixelCoord].y + (float)numSamples;
+    _RayCountTexture[currentPixelCoord].y = _RayCountTexture[currentPixelCoord].y + (uint)numSamples;
     // endif
 
 	// Variable that accumulate the radiance

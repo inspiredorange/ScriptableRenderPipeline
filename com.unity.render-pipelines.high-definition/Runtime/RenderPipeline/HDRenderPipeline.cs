@@ -1328,6 +1328,10 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
             var hdProbeCullingResults = renderRequest.cullingResults.hdProbeCullingResults;
             var target = renderRequest.target;
 
+#if ENABLE_RAYTRACING
+            m_RayTracingManager.rayCountManager.ClearRayCount(cmd, hdCamera);
+#endif
+
             // If we render a reflection view or a preview we should not display any debug information
             // This need to be call before ApplyDebugDisplaySettings()
             if (camera.cameraType == CameraType.Reflection || camera.cameraType == CameraType.Preview)

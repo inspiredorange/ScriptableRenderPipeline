@@ -30,7 +30,7 @@ Texture2D<float>                        _DepthTexture;
 // Output structure of the shadows raytrace shader
 RWTexture2D<float4>     _SNTextureUAV;
 RWTexture2D<float4>     _UNTextureUAV;
-RWTexture2D<float4>     _RayCountTexture;
+RWTexture2D<uint4>      _RayCountTexture;
 RWTexture2D<float4>     _UTextureUAV;
 
 struct MISSamplingInput
@@ -300,7 +300,7 @@ void RayGenShadows()
 
 
     // TODO ifdef debug or something like that
-    _RayCountTexture[currentPixelCoord].z = _RayCountTexture[currentPixelCoord].z + (float)_RaytracingNumSamples;
+    _RayCountTexture[currentPixelCoord].z = _RayCountTexture[currentPixelCoord].z + (uint)_RaytracingNumSamples;
     // endif
 
     bool validity = false;
