@@ -164,10 +164,10 @@ MonoBehaviour:
     debugViewRayCountPS: {fileID: 4800000, guid: ec2e19714a33f8c4a936a011626e4d20,
       type: 3}
   materials:
-    defaultDiffuseMat: {fileID: 0}
-    defaultMirrorMat: {fileID: 0}
-    defaultDecalMat: {fileID: 0}
-    defaultTerrainMat: {fileID: 0}
+    defaultDiffuseMat: {fileID: 2100000, guid: 73c176f402d2c2f4d929aa5da7585d17, type: 2}
+    defaultMirrorMat: {fileID: 2100000, guid: 6b17274157b33bc45b6a40e7d4ff51fe, type: 2}
+    defaultDecalMat: {fileID: 2100000, guid: 500e733574922d04ea961553b1b26a63, type: 2}
+    defaultTerrainMat: {fileID: 2100000, guid: 22ff8771d87ef27429e670136399094b, type: 2}
   textures:
     debugFontTex: {fileID: 2800000, guid: a3ad2df0e49aaa341a3b3a80f93b3f66, type: 3}
     colorGradient: {fileID: 2800000, guid: 4ea52e665573c1644bf05dd9b11fd2a4, type: 3}
@@ -238,7 +238,6 @@ MonoBehaviour:
     - {fileID: 2800000, guid: c6a5e40e6746fef4fa486e8f620ee8d4, type: 3}
     - {fileID: 2800000, guid: fd4189357c6dfb94fa2d36afbce72086, type: 3}
     coherentRGNoise128:
-    - {fileID: 0}
     - {fileID: 2800000, guid: 5fb5a79c1155ae84fa1632dd1f1901f9, type: 3}
     - {fileID: 2800000, guid: 285d8cf883f533c459dc8b18092689b1, type: 3}
     - {fileID: 2800000, guid: 962df42d66c41c047bb6e90d99696cfa, type: 3}
@@ -246,14 +245,7 @@ MonoBehaviour:
     - {fileID: 2800000, guid: 51e96850e2079014ba1e6cff236df874, type: 3}
     - {fileID: 2800000, guid: ed17bcb607e01fd4ca4ece9a3b4baf3d, type: 3}
     - {fileID: 2800000, guid: eefe2c3957d0d1c40a6d46c566254f56, type: 3}
-    - {fileID: 0}
-    - {fileID: 0}
-    - {fileID: 0}
-    - {fileID: 0}
-    - {fileID: 0}
-    - {fileID: 0}
-    - {fileID: 0}
-    - {fileID: 0}
+    - {fileID: 2800000, guid: c41231daef6e35d4095f1af8631f65c5, type: 3}
     filmGrainTex:
     - {fileID: 2800000, guid: 284a1ac236869fa4eacf377d73c7dff8, type: 3}
     - {fileID: 2800000, guid: bd74961b009b93145a998ae93a5fc186, type: 3}
