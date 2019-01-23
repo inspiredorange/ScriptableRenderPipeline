@@ -28,11 +28,16 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
         int _FontColor = Shader.PropertyToID("_FontColor");
         int m_CountInMegaRays;
 
+        //MiniProfiler.RecorderEntry[] recordersList =
+        //{
+        //    new MiniProfiler.RecorderEntry() { name=""}
+        //}
+
         public void Init(RenderPipelineResources renderPipelineResources)
         {
             m_Blit = CoreUtils.CreateEngineMaterial(renderPipelineResources.shaders.blitPS);
-            m_DrawRayCount = CoreUtils.CreateEngineMaterial(renderPipelineResources.shaders.drawRayCountPS);
-            m_RayCountCompute = renderPipelineResources.shaders.countRays;
+            m_DrawRayCount = CoreUtils.CreateEngineMaterial(renderPipelineResources.shaders.debugViewRayCountPS);
+            m_RayCountCompute = renderPipelineResources.shaders.countTracedRays;
             s_DebugFontTex = renderPipelineResources.textures.debugFontTex;
             m_RayCountTex = RTHandles.Alloc(Vector2.one, filterMode: FilterMode.Point, colorFormat: GraphicsFormat.R16G16B16A16_SFloat, enableRandomWrite: true, useMipMap: false, name: "RayCountTex");
             m_TotalAORaysTex = RTHandles.Alloc(1, 1, filterMode: FilterMode.Point, colorFormat: GraphicsFormat.R16_UInt, enableRandomWrite: true, useMipMap: false, name: "TotalAORaysTex");

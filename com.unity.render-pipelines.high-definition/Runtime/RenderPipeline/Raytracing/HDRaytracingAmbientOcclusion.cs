@@ -88,37 +88,39 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
                 return;
             }
             
-            // Define the shader pass to use for the reflection pass
-            cmd.SetRaytracingShaderPass(aoShader, "RTRaytrace_Visibility");
+            using (new ProfilingSample(cmd, "Raytrace AO", CustomSamplerId.RaytracingAmbientOcclusion.GetSampler()))
+            {
+                // Define the shader pass to use for the reflection pass
+                cmd.SetRaytracingShaderPass(aoShader, "RTRaytrace_Visibility");
 
-            // Set the acceleration structure for the pass
-            cmd.SetRaytracingAccelerationStructure(aoShader, HDShaderIDs._RaytracingAccelerationStructureName, accelerationStructure);
+                // Set the acceleration structure for the pass
+                cmd.SetRaytracingAccelerationStructure(aoShader, HDShaderIDs._RaytracingAccelerationStructureName, accelerationStructure);
 
-            // Inject the ray-tracing noise data
-            cmd.SetRaytracingTextureParam(aoShader, m_RayGenShaderName, HDShaderIDs._RaytracingNoiseTexture, noiseTexture);
-            cmd.SetRaytracingIntParams(aoShader, HDShaderIDs._RaytracingNoiseResolution, noiseTexture.width);
-            cmd.SetRaytracingIntParams(aoShader, HDShaderIDs._RaytracingNumNoiseLayers, noiseTexture.depth);
+                // Inject the ray-tracing noise data
+                cmd.SetRaytracingTextureParam(aoShader, m_RayGenShaderName, HDShaderIDs._RaytracingNoiseTexture, noiseTexture);
+                cmd.SetRaytracingIntParams(aoShader, HDShaderIDs._RaytracingNoiseResolution, noiseTexture.width);
+                cmd.SetRaytracingIntParams(aoShader, HDShaderIDs._RaytracingNumNoiseLayers, noiseTexture.depth);
 
-            // Inject the ray generation data
-            cmd.SetRaytracingFloatParams(aoShader, HDShaderIDs._RaytracingRayBias, rtEnvironement.rayBias);
-            cmd.SetRaytracingFloatParams(aoShader, HDShaderIDs._RaytracingRayMaxLength, rtEnvironement.aoRayLength);
-            cmd.SetRaytracingIntParams(aoShader, HDShaderIDs._RaytracingNumSamples, rtEnvironement.aoNumSamples);
+                // Inject the ray generation data
+                cmd.SetRaytracingFloatParams(aoShader, HDShaderIDs._RaytracingRayBias, rtEnvironement.rayBias);
+                cmd.SetRaytracingFloatParams(aoShader, HDShaderIDs._RaytracingRayMaxLength, rtEnvironement.aoRayLength);
+                cmd.SetRaytracingIntParams(aoShader, HDShaderIDs._RaytracingNumSamples, rtEnvironement.aoNumSamples);
 
-            // Set the data for the ray generation
-            cmd.SetRaytracingTextureParam(aoShader, m_RayGenShaderName, HDShaderIDs._RaytracingHitDistanceTexture, m_HitDistanceBuffer);
-            cmd.SetRaytracingTextureParam(aoShader, m_RayGenShaderName, HDShaderIDs._RaytracingVSNormalTexture, m_ViewSpaceNormalBuffer);
-            cmd.SetRaytracingTextureParam(aoShader, m_RayGenShaderName, HDShaderIDs._AmbientOcclusionTextureRW, m_IntermediateBuffer);
-            cmd.SetRaytracingTextureParam(aoShader, m_RayGenShaderName, HDShaderIDs._DepthTexture, m_SharedRTManager.GetDepthStencilBuffer());
-            cmd.SetRaytracingTextureParam(aoShader, m_RayGenShaderName, HDShaderIDs._NormalBufferTexture, m_SharedRTManager.GetNormalBuffer());
+                // Set the data for the ray generation
+                cmd.SetRaytracingTextureParam(aoShader, m_RayGenShaderName, HDShaderIDs._RaytracingHitDistanceTexture, m_HitDistanceBuffer);
+                cmd.SetRaytracingTextureParam(aoShader, m_RayGenShaderName, HDShaderIDs._RaytracingVSNormalTexture, m_ViewSpaceNormalBuffer);
+                cmd.SetRaytracingTextureParam(aoShader, m_RayGenShaderName, HDShaderIDs._AmbientOcclusionTextureRW, m_IntermediateBuffer);
+                cmd.SetRaytracingTextureParam(aoShader, m_RayGenShaderName, HDShaderIDs._DepthTexture, m_SharedRTManager.GetDepthStencilBuffer());
+                cmd.SetRaytracingTextureParam(aoShader, m_RayGenShaderName, HDShaderIDs._NormalBufferTexture, m_SharedRTManager.GetNormalBuffer());
 
-            // Todo IF DEBUG
-            cmd.SetRaytracingTextureParam(aoShader, m_RayGenShaderName, HDShaderIDs._RayCountTexture, rayCountTex);
-            // endif
+                // Todo IF DEBUG
+                cmd.SetRaytracingTextureParam(aoShader, m_RayGenShaderName, HDShaderIDs._RayCountTexture, rayCountTex);
+                // endif
 
-            // Run the calculus
-            cmd.DispatchRays(aoShader, m_RayGenShaderName, (uint)hdCamera.actualWidth, (uint)hdCamera.actualHeight, 1);
-
-            using (new ProfilingSample(cmd, "Filter Reflection", CustomSamplerId.RaytracingAmbientOcclusion.GetSampler()))
+                // Run the calculus
+                cmd.DispatchRays(aoShader, m_RayGenShaderName, (uint)hdCamera.actualWidth, (uint)hdCamera.actualHeight, 1);
+            }
+            using (new ProfilingSample(cmd, "Filter AO", CustomSamplerId.RaytracingFilterAO.GetSampler()))
             {
                 switch(rtEnvironement.aoFilterMode)
                 {

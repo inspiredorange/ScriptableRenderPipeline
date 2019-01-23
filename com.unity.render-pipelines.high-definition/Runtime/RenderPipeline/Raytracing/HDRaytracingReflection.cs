@@ -82,65 +82,66 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
             ComputeShader bilateralFilter = m_PipelineAsset.renderPipelineResources.shaders.reflectionBilateralFilterCS;
             RaytracingShader reflectionShader = m_PipelineAsset.renderPipelineResources.shaders.reflectionRaytracing;
             bool missingResources = rtEnvironement == null || noiseTexture == null || bilateralFilter == null || reflectionShader == null;
-
-            // Try to grab the acceleration structure and the list of HD lights for the target camera
-            RaytracingAccelerationStructure accelerationStructure = m_RaytracingManager.RequestAccelerationStructure(hdCamera);
-            List<HDAdditionalLightData> lightData = m_RaytracingManager.RequestHDLightList(hdCamera);
-
-            // If no acceleration structure available, end it now
-            if (accelerationStructure == null || lightData == null || missingResources)
-                return;
-
-            // Evaluate the light cluster
-            // TODO: Do only this once per frame and share it between primary visibility and reflection (if any of them request it)
-            m_LightCluster.EvaluateLightClusters(cmd, hdCamera, lightData);
-
-            // Define the shader pass to use for the reflection pass
-            cmd.SetRaytracingShaderPass(reflectionShader, "RTRaytrace_Reflections");
-
-            // Set the acceleration structure for the pass
-            cmd.SetRaytracingAccelerationStructure(reflectionShader, HDShaderIDs._RaytracingAccelerationStructureName, accelerationStructure);
-
-            // Inject the ray-tracing noise data
-            cmd.SetRaytracingTextureParam(reflectionShader, m_RayGenShaderName, HDShaderIDs._RaytracingNoiseTexture, noiseTexture);
-            cmd.SetRaytracingIntParams(reflectionShader, HDShaderIDs._RaytracingNoiseResolution, noiseTexture.width);
-            cmd.SetRaytracingIntParams(reflectionShader, HDShaderIDs._RaytracingNumNoiseLayers, noiseTexture.depth);
-
-            // Inject the ray generation data
-            cmd.SetGlobalFloat(HDShaderIDs._RaytracingRayBias, rtEnvironement.rayBias);
-            cmd.SetGlobalFloat(HDShaderIDs._RaytracingRayMaxLength, rtEnvironement.reflRayLength);
-            cmd.SetRaytracingIntParams(reflectionShader, HDShaderIDs._RaytracingNumSamples, rtEnvironement.reflNumMaxSamples);
-
-            // Set the data for the ray generation
-            cmd.SetRaytracingTextureParam(reflectionShader, m_RayGenShaderName, HDShaderIDs._SsrLightingTextureRW, m_IntermediateBuffer);
-            cmd.SetRaytracingTextureParam(reflectionShader, m_RayGenShaderName, HDShaderIDs._DepthTexture, m_SharedRTManager.GetDepthStencilBuffer());
-            cmd.SetRaytracingTextureParam(reflectionShader, m_RayGenShaderName, HDShaderIDs._NormalBufferTexture, m_SharedRTManager.GetNormalBuffer());
-
-            // Set ray count tex - Todo IF DEBUG
-            cmd.SetRaytracingTextureParam(reflectionShader, m_RayGenShaderName, HDShaderIDs._RayCountTexture, rayCountTex);
-
-            // Compute the pixel spread value
-            float pixelSpreadAngle = Mathf.Atan(2.0f * Mathf.Tan(hdCamera.camera.fieldOfView * Mathf.PI / 360.0f) / Mathf.Min(hdCamera.actualWidth, hdCamera.actualHeight));
-            cmd.SetRaytracingFloatParam(reflectionShader, _PixelSpreadAngle, pixelSpreadAngle);
-
-            if(lightData.Count != 0)
+            using (new ProfilingSample(cmd, "Raytrace Reflections", CustomSamplerId.RaytracingIntegrateReflection.GetSampler()))
             {
-                // LightLoop data
-                cmd.SetGlobalBuffer(_RaytracingLightCluster, m_LightCluster.GetCluster());
-                cmd.SetGlobalBuffer(_LightDatasRT, m_LightCluster.GetLightDatas());
-                cmd.SetGlobalVector(_MinClusterPos, m_LightCluster.GetMinClusterPos());
-                cmd.SetGlobalVector(_MaxClusterPos, m_LightCluster.GetMaxClusterPos());
-                cmd.SetGlobalInt(_LightPerCellCount, rtEnvironement.maxNumLightsPercell);
-                cmd.SetGlobalInt(_PunctualLightCountRT, m_LightCluster.GetPunctualLightCount());
-                cmd.SetGlobalInt(_AreaLightCountRT, m_LightCluster.GetAreaLightCount());
+                // Try to grab the acceleration structure and the list of HD lights for the target camera
+                RaytracingAccelerationStructure accelerationStructure = m_RaytracingManager.RequestAccelerationStructure(hdCamera);
+                List<HDAdditionalLightData> lightData = m_RaytracingManager.RequestHDLightList(hdCamera);
+
+                // If no acceleration structure available, end it now
+                if (accelerationStructure == null || lightData == null || missingResources)
+                    return;
+
+                // Evaluate the light cluster
+                // TODO: Do only this once per frame and share it between primary visibility and reflection (if any of them request it)
+                m_LightCluster.EvaluateLightClusters(cmd, hdCamera, lightData);
+
+                // Define the shader pass to use for the reflection pass
+                cmd.SetRaytracingShaderPass(reflectionShader, "RTRaytrace_Reflections");
+
+                // Set the acceleration structure for the pass
+                cmd.SetRaytracingAccelerationStructure(reflectionShader, HDShaderIDs._RaytracingAccelerationStructureName, accelerationStructure);
+
+                // Inject the ray-tracing noise data
+                cmd.SetRaytracingTextureParam(reflectionShader, m_RayGenShaderName, HDShaderIDs._RaytracingNoiseTexture, noiseTexture);
+                cmd.SetRaytracingIntParams(reflectionShader, HDShaderIDs._RaytracingNoiseResolution, noiseTexture.width);
+                cmd.SetRaytracingIntParams(reflectionShader, HDShaderIDs._RaytracingNumNoiseLayers, noiseTexture.depth);
+
+                // Inject the ray generation data
+                cmd.SetGlobalFloat(HDShaderIDs._RaytracingRayBias, rtEnvironement.rayBias);
+                cmd.SetGlobalFloat(HDShaderIDs._RaytracingRayMaxLength, rtEnvironement.reflRayLength);
+                cmd.SetRaytracingIntParams(reflectionShader, HDShaderIDs._RaytracingNumSamples, rtEnvironement.reflNumMaxSamples);
+
+                // Set the data for the ray generation
+                cmd.SetRaytracingTextureParam(reflectionShader, m_RayGenShaderName, HDShaderIDs._SsrLightingTextureRW, m_IntermediateBuffer);
+                cmd.SetRaytracingTextureParam(reflectionShader, m_RayGenShaderName, HDShaderIDs._DepthTexture, m_SharedRTManager.GetDepthStencilBuffer());
+                cmd.SetRaytracingTextureParam(reflectionShader, m_RayGenShaderName, HDShaderIDs._NormalBufferTexture, m_SharedRTManager.GetNormalBuffer());
+
+                // Set ray count tex - Todo IF DEBUG
+                cmd.SetRaytracingTextureParam(reflectionShader, m_RayGenShaderName, HDShaderIDs._RayCountTexture, rayCountTex);
+
+                // Compute the pixel spread value
+                float pixelSpreadAngle = Mathf.Atan(2.0f * Mathf.Tan(hdCamera.camera.fieldOfView * Mathf.PI / 360.0f) / Mathf.Min(hdCamera.actualWidth, hdCamera.actualHeight));
+                cmd.SetRaytracingFloatParam(reflectionShader, _PixelSpreadAngle, pixelSpreadAngle);
+
+                if (lightData.Count != 0)
+                {
+                    // LightLoop data
+                    cmd.SetGlobalBuffer(_RaytracingLightCluster, m_LightCluster.GetCluster());
+                    cmd.SetGlobalBuffer(_LightDatasRT, m_LightCluster.GetLightDatas());
+                    cmd.SetGlobalVector(_MinClusterPos, m_LightCluster.GetMinClusterPos());
+                    cmd.SetGlobalVector(_MaxClusterPos, m_LightCluster.GetMaxClusterPos());
+                    cmd.SetGlobalInt(_LightPerCellCount, rtEnvironement.maxNumLightsPercell);
+                    cmd.SetGlobalInt(_PunctualLightCountRT, m_LightCluster.GetPunctualLightCount());
+                    cmd.SetGlobalInt(_AreaLightCountRT, m_LightCluster.GetAreaLightCount());
+                }
+
+                // Set the data for the ray miss
+                cmd.SetRaytracingTextureParam(reflectionShader, m_MissShaderName, HDShaderIDs._SkyTexture, m_SkyManager.skyReflection);
+
+                // Run the calculus
+                cmd.DispatchRays(reflectionShader, m_RayGenShaderName, (uint)hdCamera.actualWidth, (uint)hdCamera.actualHeight, 1);
             }
-
-            // Set the data for the ray miss
-            cmd.SetRaytracingTextureParam(reflectionShader, m_MissShaderName, HDShaderIDs._SkyTexture, m_SkyManager.skyReflection);
-            
-            // Run the calculus
-            cmd.DispatchRays(reflectionShader, m_RayGenShaderName, (uint)hdCamera.actualWidth, (uint)hdCamera.actualHeight, 1);
-
             using (new ProfilingSample(cmd, "Filter Reflection", CustomSamplerId.RaytracingFilterReflection.GetSampler()))
             {
                 switch (rtEnvironement.reflFilterMode)

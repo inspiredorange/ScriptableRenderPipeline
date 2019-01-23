@@ -135,8 +135,8 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
             public ComputeShader reflectionBilateralFilterCS;
             public ComputeShader lightClusterBuildCS;
             public ComputeShader lightClusterDebugCS;
-            public ComputeShader countRays;
-            public Shader drawRayCountPS;
+            public ComputeShader countTracedRays;
+            public Shader debugViewRayCountPS;
 #endif
         }
 
@@ -385,8 +385,8 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
             shaders.reflectionBilateralFilterCS = Load<ComputeShader>(HDRenderPipelinePath + "RenderPipeline/Raytracing/Shaders/GaussianBilateral.compute");
             shaders.lightClusterBuildCS = Load<ComputeShader>(HDRenderPipelinePath + "RenderPipeline/Raytracing/Shaders/RaytracingLightCluster.compute");
             shaders.lightClusterDebugCS = Load<ComputeShader>(HDRenderPipelinePath + "RenderPipeline/Raytracing/Shaders/DebugLightCluster.compute");
-            shaders.countRays = Load<ComputeShader>(HDRenderPipelinePath + "RenderPipeline/Raytracing/Shaders/CountTracedRays.compute");
-            shaders.drawRayCountPS = Load<Shader>(HDRenderPipelinePath + "RenderPipeline/Raytracing/Shaders/DebugViewRayCount.shader");
+            shaders.countTracedRays = Load<ComputeShader>(HDRenderPipelinePath + "RenderPipeline/Raytracing/Shaders/CountTracedRays.compute");
+            shaders.debugViewRayCountPS = Load<Shader>(HDRenderPipelinePath + "RenderPipeline/Raytracing/Shaders/DebugViewRayCount.shader");
         }
 #endif
 #endif
