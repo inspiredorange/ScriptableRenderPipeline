@@ -1490,7 +1490,7 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
                 StartStereoRendering(cmd, renderContext, camera);
 
                 if (!hdCamera.frameSettings.SSAORunsAsync())
-                    m_AmbientOcclusionSystem.Render(cmd, hdCamera, m_SharedRTManager, renderContext, m_RayTracingManager.debugManager.rayCountTex);
+                    m_AmbientOcclusionSystem.Render(cmd, hdCamera, m_SharedRTManager, renderContext, m_RayTracingManager.rayCountManager.rayCountTex);
 
                 // Clear and copy the stencil texture needs to be moved to before we invoke the async light list build,
                 // otherwise the async compute queue can end up using that texture before the graphics queue is done with it.
@@ -1551,7 +1551,7 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
                 {
 #if ENABLE_RAYTRACING
                     // Let's render the screen space area light shadows
-                    bool areaShadowsRendered = m_RaytracingShadows.RenderAreaShadows(hdCamera, cmd, renderContext, m_RayTracingManager.debugManager.rayCountTex);
+                    bool areaShadowsRendered = m_RaytracingShadows.RenderAreaShadows(hdCamera, cmd, renderContext, m_RayTracingManager.rayCountManager.rayCountTex);
                     PushFullScreenDebugTexture(hdCamera, cmd, m_RaytracingShadows.GetShadowedIntegrationTexture(), FullScreenDebugMode.RaytracedAreaShadow);
                     if (areaShadowsRendered)
                     {
@@ -2683,7 +2683,7 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
 
             if (m_Asset.renderPipelineSettings.supportRayTracing && rtEnvironement != null && rtEnvironement.raytracedReflections)
             {
-                m_RaytracingReflections.RenderReflections(hdCamera, cmd, m_SsrLightingTexture, renderContext, m_RayTracingManager.debugManager.rayCountTex);
+                m_RaytracingReflections.RenderReflections(hdCamera, cmd, m_SsrLightingTexture, renderContext, m_RayTracingManager.rayCountManager.rayCountTex);
 
                 PushFullScreenDebugTexture(hdCamera, cmd, m_RaytracingReflections.m_LightCluster.m_DebugLightClusterTexture, FullScreenDebugMode.LightCluster);
             }
@@ -2987,7 +2987,7 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
 
 #if ENABLE_RAYTRACING
                 if (m_CurrentDebugDisplaySettings.data.countRays)
-                    m_RayTracingManager.debugManager.RenderRayCount(cmd, hdCamera, m_CameraColorBuffer, m_CurrentDebugDisplaySettings.data.rayCountFontColor); ; 
+                    m_RayTracingManager.rayCountManager.RenderRayCount(cmd, hdCamera, m_CameraColorBuffer, m_CurrentDebugDisplaySettings.data.rayCountFontColor); ; 
 #endif
 
                 m_LightLoop.RenderDebugOverlay(hdCamera, cmd, m_CurrentDebugDisplaySettings, ref x, ref y, overlaySize, hdCamera.actualWidth, cullResults);

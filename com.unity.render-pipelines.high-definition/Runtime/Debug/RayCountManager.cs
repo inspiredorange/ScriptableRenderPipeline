@@ -34,11 +34,11 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
             m_DrawRayCount = CoreUtils.CreateEngineMaterial(renderPipelineResources.shaders.drawRayCountPS);
             m_RayCountCompute = renderPipelineResources.shaders.countRays;
             s_DebugFontTex = renderPipelineResources.textures.debugFontTex;
-            m_RayCountTex = RTHandles.Alloc(Vector2.one, filterMode: FilterMode.Point, colorFormat: RenderTextureFormat.ARGBHalf, sRGB: false, enableRandomWrite: true, useMipMap: false, name: "RayCountTex");
-            m_TotalAORaysTex = RTHandles.Alloc(1, 1, filterMode: FilterMode.Point, colorFormat: RenderTextureFormat.RInt, sRGB: false, enableRandomWrite: true, useMipMap: false, name: "TotalAORaysTex");
-            m_TotalReflectionRaysTex = RTHandles.Alloc(1, 1, filterMode: FilterMode.Point, colorFormat: RenderTextureFormat.RInt, sRGB: false, enableRandomWrite: true, useMipMap: false, name: "TotalReflectionRaysTex");
-            m_TotalAreaShadowRaysTex = RTHandles.Alloc(1, 1, filterMode: FilterMode.Point, colorFormat: RenderTextureFormat.RInt, sRGB: false, enableRandomWrite: true, useMipMap: false, name: "TotalAreaShadowRaysTex");
-            m_TotalMegaRaysTex = RTHandles.Alloc(1, 1, filterMode: FilterMode.Point, colorFormat: RenderTextureFormat.ARGBHalf, sRGB: false, enableRandomWrite: true, useMipMap: false, name: "TotalRaysTex");
+            m_RayCountTex = RTHandles.Alloc(Vector2.one, filterMode: FilterMode.Point, colorFormat: GraphicsFormat.R16G16B16A16_SFloat, enableRandomWrite: true, useMipMap: false, name: "RayCountTex");
+            m_TotalAORaysTex = RTHandles.Alloc(1, 1, filterMode: FilterMode.Point, colorFormat: GraphicsFormat.R16_UInt, enableRandomWrite: true, useMipMap: false, name: "TotalAORaysTex");
+            m_TotalReflectionRaysTex = RTHandles.Alloc(1, 1, filterMode: FilterMode.Point, colorFormat: GraphicsFormat.R16_UInt, enableRandomWrite: true, useMipMap: false, name: "TotalReflectionRaysTex");
+            m_TotalAreaShadowRaysTex = RTHandles.Alloc(1, 1, filterMode: FilterMode.Point, colorFormat: GraphicsFormat.R16_UInt, enableRandomWrite: true, useMipMap: false, name: "TotalAreaShadowRaysTex");
+            m_TotalMegaRaysTex = RTHandles.Alloc(1, 1, filterMode: FilterMode.Point, colorFormat: GraphicsFormat.R16G16B16A16_SFloat, enableRandomWrite: true, useMipMap: false, name: "TotalRaysTex");
         }
 
         public void Release()

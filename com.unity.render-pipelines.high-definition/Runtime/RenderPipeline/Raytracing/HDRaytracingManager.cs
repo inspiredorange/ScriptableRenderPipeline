@@ -12,12 +12,12 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
     {
         // The list of raytracing environments that have been registered
         List<HDRaytracingEnvironment> m_Environments = null;
-        RayCountManager m_DebugRayTrace = new RayCountManager();
-        public RayCountManager debugManager
+        RayCountManager m_RayCountManager = new RayCountManager();
+        public RayCountManager rayCountManager
         {
             get
             {
-                return m_DebugRayTrace; 
+                return m_RayCountManager; 
             }
         }
 
@@ -191,6 +191,8 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
             // Keep track of the noise texture to use
             m_RGNoiseTexture = blueNoise.textureArray128RGCoherent;
 
+            m_RayCountManager.Init(resources);
+
 #if UNITY_EDITOR
             // We need to invalidate the acceleration structures in case the hierarchy changed
             EditorApplication.hierarchyChanged += OnHierarchyChanged;
@@ -231,7 +233,7 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
                 HDRayTracingSubScene currentSubScene = m_SubScenes[m_LayerMasks[subSceneIndex]];
                 DestroySubSceneStructure(ref currentSubScene);
             }
-            m_DebugRayTrace.Release();
+            m_RayCountManager.Release();
         }
 
         public void DestroySubSceneStructure(ref HDRayTracingSubScene subScene)
