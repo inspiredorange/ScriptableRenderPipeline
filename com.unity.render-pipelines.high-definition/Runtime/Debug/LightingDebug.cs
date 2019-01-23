@@ -15,17 +15,7 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
         IndirectDiffuseOcclusion,
         IndirectSpecularOcclusion
     }
-
-    [GenerateHLSL]
-    public enum DebugRayTracedPass
-    {
-        None,
-        All,
-        AreaShadow,
-        Reflections,
-        AmbientOcclusion,
-    }
-
+    
     [GenerateHLSL]
     public enum ShadowMapDebugMode
     {
