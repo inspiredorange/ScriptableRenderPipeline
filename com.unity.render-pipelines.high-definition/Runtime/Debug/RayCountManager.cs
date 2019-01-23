@@ -39,11 +39,12 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
             m_DrawRayCount = CoreUtils.CreateEngineMaterial(renderPipelineResources.shaders.debugViewRayCountPS);
             m_RayCountCompute = renderPipelineResources.shaders.countTracedRays;
             s_DebugFontTex = renderPipelineResources.textures.debugFontTex;
+            // UINT textures must use UINT32, since groupshared uint used to synchronize counts is allocated as a UINT32
             m_RayCountTex = RTHandles.Alloc(Vector2.one, filterMode: FilterMode.Point, colorFormat: GraphicsFormat.R32G32B32A32_UInt, enableRandomWrite: true, useMipMap: false, name: "RayCountTex");
             m_TotalAORaysTex = RTHandles.Alloc(1, 1, filterMode: FilterMode.Point, colorFormat: GraphicsFormat.R32_UInt, enableRandomWrite: true, useMipMap: false, name: "TotalAORaysTex");
             m_TotalReflectionRaysTex = RTHandles.Alloc(1, 1, filterMode: FilterMode.Point, colorFormat: GraphicsFormat.R32_UInt, enableRandomWrite: true, useMipMap: false, name: "TotalReflectionRaysTex");
             m_TotalAreaShadowRaysTex = RTHandles.Alloc(1, 1, filterMode: FilterMode.Point, colorFormat: GraphicsFormat.R32_UInt, enableRandomWrite: true, useMipMap: false, name: "TotalAreaShadowRaysTex");
-            m_TotalMegaRaysTex = RTHandles.Alloc(1, 1, filterMode: FilterMode.Point, colorFormat: GraphicsFormat.R32G32B32A32_UInt, enableRandomWrite: true, useMipMap: false, name: "TotalRaysTex");
+            m_TotalMegaRaysTex = RTHandles.Alloc(1, 1, filterMode: FilterMode.Point, colorFormat: GraphicsFormat.R16G16B16A16_SFloat, enableRandomWrite: true, useMipMap: false, name: "TotalRaysTex");
         }
 
         public void Release()
