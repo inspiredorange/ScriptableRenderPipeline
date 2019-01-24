@@ -104,6 +104,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Micro-shadowing in Lit forward now use ambientOcclusion instead of SpecularOcclusion
 - Upgraded FrameSettings workflow, DebugMenu and Inspector part relative to it
 - Update build light list shader code to support 32 threads in wavefronts on Switch
+- Rename SampleCameraDepth to SampleCameraDepthSS and SampleCameraDepthUV
 
 ## [5.2.0-preview] - 2018-11-27
 
