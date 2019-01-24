@@ -1494,7 +1494,8 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
                 StartStereoRendering(cmd, renderContext, camera);
 
                 if (!hdCamera.frameSettings.SSAORunsAsync())
-                    m_AmbientOcclusionSystem.Render(cmd, hdCamera, m_SharedRTManager, renderContext, m_RayTracingManager.rayCountManager.rayCountTex);
+                    m_AmbientOcclusionSystem.Render(cmd, hdCamera, m_SharedRTManager, renderContext);
+
 
                 // Clear and copy the stencil texture needs to be moved to before we invoke the async light list build,
                 // otherwise the async compute queue can end up using that texture before the graphics queue is done with it.
