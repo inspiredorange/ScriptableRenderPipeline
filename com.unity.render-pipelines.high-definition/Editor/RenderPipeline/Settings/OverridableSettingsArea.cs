@@ -8,7 +8,7 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
 {
     internal struct OverridableSettingsArea
     {
-        static readonly GUIContent overrideTooltip = EditorGUIUtility.TrTextContent("Override this setting in component.");
+        static readonly GUIContent overrideTooltip = EditorGUIUtility.TrTextContent("", "Override this setting in component.");
 
         private struct Field
         {
