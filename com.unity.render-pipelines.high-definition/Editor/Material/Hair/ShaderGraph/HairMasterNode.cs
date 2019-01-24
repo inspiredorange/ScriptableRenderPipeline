@@ -92,10 +92,10 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
         public const string AlphaClipThresholdShadowSlotName = "AlphaClipThresholdShadow";
         public const int AlphaClipThresholdShadowSlotId = 23;
 
-        public const string LightingSlotName = "Lighting";
+        public const string BakedGISlotName = "Lighting";
         public const int LightingSlotId = 24;
 
-        public const string BackLightingSlotName = "BackLighting";
+        public const string BakedBackGISlotName = "BackLighting";
         public const int BackLightingSlotId = 25;
 
         public enum MaterialType
@@ -495,16 +495,16 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
         }
 
         [SerializeField]
-        bool m_OverrideLighting;
+        bool m_overrideBakedGI;
 
-        public ToggleData overrideLighting
+        public ToggleData overrideBakedGI
         {
-            get { return new ToggleData(m_OverrideLighting); }
+            get { return new ToggleData(m_overrideBakedGI); }
             set
             {
-                if (m_OverrideLighting == value.isOn)
+                if (m_overrideBakedGI == value.isOn)
                     return;
-                m_OverrideLighting = value.isOn;
+                m_overrideBakedGI = value.isOn;
                 UpdateNodeAfterDeserialization();
                 Dirty(ModificationScope.Topological);
             }
@@ -645,11 +645,11 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
                 AddSlot(new Vector1MaterialSlot(SecondarySpecularShiftSlotId, SecondarySpecularShiftSlotName, SecondarySpecularShiftSlotName, SlotType.Input, 0.5f, ShaderStageCapability.Fragment));
                 validSlots.Add(SecondarySpecularShiftSlotId);
             }
-            if (MaterialTypeUsesSlotMask(SlotMask.Lighting) && overrideLighting.isOn)
+            if (MaterialTypeUsesSlotMask(SlotMask.Lighting) && overrideBakedGI.isOn)
             {
-                AddSlot(new Vector3MaterialSlot(LightingSlotId, LightingSlotName, LightingSlotName, SlotType.Input, Vector3.zero, ShaderStageCapability.Fragment));
+                AddSlot(new BakedGIMaterialSlot(LightingSlotId, BakedGISlotName, BakedGISlotName, ShaderStageCapability.Fragment));
                 validSlots.Add(LightingSlotId);
-                AddSlot(new Vector3MaterialSlot(BackLightingSlotId, BackLightingSlotName, BackLightingSlotName, SlotType.Input, Vector3.zero, ShaderStageCapability.Fragment));
+                AddSlot(new BakedGIMaterialSlot(BackLightingSlotId, BakedBackGISlotName, BakedBackGISlotName, ShaderStageCapability.Fragment));
                 validSlots.Add(BackLightingSlotId);
             }
 

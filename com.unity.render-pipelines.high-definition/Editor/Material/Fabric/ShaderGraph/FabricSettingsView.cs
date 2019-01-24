@@ -194,12 +194,12 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline.Drawing
                 });
             });
 
-            ps.Add(new PropertyRow(CreateLabel("Override Lighting", indentLevel)), (row) =>
+            ps.Add(new PropertyRow(CreateLabel("Override Baked GI", indentLevel)), (row) =>
             {
                 row.Add(new Toggle(), (toggle) =>
                 {
-                    toggle.value = m_Node.overrideLighting.isOn;
-                    toggle.OnToggleChanged(ChangeOverrideLighting);
+                    toggle.value = m_Node.overrideBakedGI.isOn;
+                    toggle.OnToggleChanged(ChangeoverrideBakedGI);
                 });
             });
 
@@ -353,12 +353,12 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline.Drawing
             m_Node.specularOcclusionMode = (SpecularOcclusionMode)evt.newValue;
         }
 
-        void ChangeOverrideLighting(ChangeEvent<bool> evt)
+        void ChangeoverrideBakedGI(ChangeEvent<bool> evt)
         {
-            m_Node.owner.owner.RegisterCompleteObjectUndo("OverrideLighting Change");
-            ToggleData td = m_Node.overrideLighting;
+            m_Node.owner.owner.RegisterCompleteObjectUndo("overrideBakedGI Change");
+            ToggleData td = m_Node.overrideBakedGI;
             td.isOn = evt.newValue;
-            m_Node.overrideLighting = td;
+            m_Node.overrideBakedGI = td;
         }
 
         public AlphaMode GetAlphaMode(FabricMasterNode.AlphaModeFabric alphaModeLit)
