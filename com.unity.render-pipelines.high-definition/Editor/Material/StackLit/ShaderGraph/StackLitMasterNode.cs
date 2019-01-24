@@ -818,9 +818,9 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
 
             if (overrideBakedGI.isOn)
             {
-                AddSlot(new BakedGIMaterialSlot(LightingSlotId, BakedGISlotName, BakedGISlotName, ShaderStageCapability.Fragment));
+                AddSlot(new DefaultMaterialSlot(LightingSlotId, BakedGISlotName, BakedGISlotName, ShaderStageCapability.Fragment));
                 validSlots.Add(LightingSlotId);
-                AddSlot(new BakedGIMaterialSlot(BackLightingSlotId, BakedBackGISlotName, BakedBackGISlotName, ShaderStageCapability.Fragment));
+                AddSlot(new DefaultMaterialSlot(BackLightingSlotId, BakedBackGISlotName, BakedBackGISlotName, ShaderStageCapability.Fragment));
                 validSlots.Add(BackLightingSlotId);
             }
 
