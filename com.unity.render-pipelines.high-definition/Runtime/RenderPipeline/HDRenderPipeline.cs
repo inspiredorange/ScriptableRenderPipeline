@@ -1328,6 +1328,7 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
             var hdProbeCullingResults = renderRequest.cullingResults.hdProbeCullingResults;
             var target = renderRequest.target;
 
+            cmd.SetGlobalInt(HDShaderIDs._RaytracedAreaShadow, 0);
 #if ENABLE_RAYTRACING
             m_RayTracingManager.rayCountManager.ClearRayCount(cmd, hdCamera);
 #endif
@@ -1561,10 +1562,6 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
                     if (areaShadowsRendered)
                     {
                         cmd.SetGlobalInt(HDShaderIDs._RaytracedAreaShadow, 1);
-                    }
-                    else
-                    {
-                        cmd.SetGlobalInt(HDShaderIDs._RaytracedAreaShadow, 0);
                     }
 #endif
 
