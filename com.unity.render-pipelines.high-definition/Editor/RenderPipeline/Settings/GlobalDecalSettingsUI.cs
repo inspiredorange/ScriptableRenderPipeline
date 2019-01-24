@@ -15,12 +15,12 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
 
         readonly static ExpandedState<Expandable, GlobalDecalSettings> k_ExpandedState = new ExpandedState<Expandable, GlobalDecalSettings>(Expandable.DecalSettings, "HDRP");
 
-        static readonly GUIContent k_HeaderContent = CoreEditorUtils.GetContent("Decals");
+        static readonly GUIContent k_HeaderContent = EditorGUIUtility.TrTextContent("Decals");
 
-        static readonly GUIContent k_DrawDistanceContent = CoreEditorUtils.GetContent("Draw Distance|Sets the maximum distance from the Camera at ehich HDRP draws Decals.");
-        static readonly GUIContent k_AtlasWidthContent = CoreEditorUtils.GetContent("Atlas Width|Sets the width of the Decal Atlas.");
-        static readonly GUIContent k_AtlasHeightContent = CoreEditorUtils.GetContent("Atlas Height|Sets the height of the Decal Atlas.");
-        static readonly GUIContent k_MetalAndAOContent = CoreEditorUtils.GetContent("Metal and AO properties|When enabled, Decals affect metal and ambient occlusion properties.");
+        static readonly GUIContent k_DrawDistanceContent = EditorGUIUtility.TrTextContent("Draw Distance", "Sets the maximum distance from the Camera at ehich HDRP draws Decals.");
+        static readonly GUIContent k_AtlasWidthContent = EditorGUIUtility.TrTextContent("Atlas Width", "Sets the width of the Decal Atlas.");
+        static readonly GUIContent k_AtlasHeightContent = EditorGUIUtility.TrTextContent("Atlas Height", "Sets the height of the Decal Atlas.");
+        static readonly GUIContent k_MetalAndAOContent = EditorGUIUtility.TrTextContent("Metal and AO properties", "When enabled, Decals affect metal and ambient occlusion properties.");
 
         static GlobalDecalSettingsUI()
         {
