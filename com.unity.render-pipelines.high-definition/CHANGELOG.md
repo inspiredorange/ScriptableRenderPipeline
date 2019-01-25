@@ -83,8 +83,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Fixed issue with NewFrame not correctly calculated in Editor when switching scene
 - Fixed issue with TerrainLit not compiling with depth only pass and normal buffer
 - Fixed geometric normal use for shadow bias with PBR master node in forward
+- Fixed instancing macro usage for decals
 - Fixed error message when having more than one directional light casting shadow
 - Fixed error when trying to display preview of Camera or PlanarReflectionProbe
+- Fixed LOAD_TEXTURE2D_ARRAY_MSAA macro
+- Fixed min-max and amplitude clamping value in inspector of vertex displacement materials
 
 ### Changed
 - ColorPyramid compute shader passes is swapped to pixel shader passes on platforms where the later is faster (Nintendo Switch).
@@ -105,6 +108,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Micro-shadowing in Lit forward now use ambientOcclusion instead of SpecularOcclusion
 - Upgraded FrameSettings workflow, DebugMenu and Inspector part relative to it
 - Update build light list shader code to support 32 threads in wavefronts on Switch
+- LayeredLit layers' foldout are now grouped in one main foldout per layer
 
 ## [5.2.0-preview] - 2018-11-27
 
