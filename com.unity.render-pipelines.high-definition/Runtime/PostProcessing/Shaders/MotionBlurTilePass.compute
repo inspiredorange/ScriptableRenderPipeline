@@ -139,7 +139,9 @@ void TileGenPass(uint3 id : SV_DispatchThreadID, uint gid : SV_GroupIndex, uint2
 
 #if SCATTERING
 
-// Line drawing algorithms. 
+// Line drawing algorithms.
+// TODO: Consider a conservative line rasterization.
+#if 0
 void Bresenham(int2 center, float2 lineToDraw, uint centerInfo)
 {
     int2 maxCoords = int2(_TileTargetSize.xy - 1);
@@ -181,10 +183,11 @@ void Bresenham(int2 center, float2 lineToDraw, uint centerInfo)
         InterlockedMax(_TileToScatterMax[int2(x, y)], uint(centerInfo));
     }
 }
+#endif
 
 void DDA(int2 center, float2 lineToDraw, uint centerInfo)
 {
-    int2 maxCoords = int2(_TileTargetSize.xy - 1);
+    int2 maxCoords = int2(_TileTargetSize.xy);
     
     int2 startPoint = center;
     int2 endPoint = int2(ceil(startPoint.x + lineToDraw.x), ceil(startPoint.y + lineToDraw.y));
@@ -208,7 +211,7 @@ void DDA(int2 center, float2 lineToDraw, uint centerInfo)
     float2 currPoint = startPoint;
 
     const int maxIter = 64;
-    for (int i=0; ((currPoint.x * dirSign) <= end) && (i < maxIter); ++i)
+    for (int i=0; ((currPoint.x * dirSign) < end) && (i < maxIter); ++i)
     {
         currPoint += step;
         float2 hitPixel = permute ? currPoint.yx : currPoint;
@@ -216,12 +219,6 @@ void DDA(int2 center, float2 lineToDraw, uint centerInfo)
         InterlockedMax(_TileToScatterMax[ceil(hitPixel)], uint(centerInfo));
     }
 }
-
-// TODO_FCC:
-// For perf and for simplicity with old method, what if keep TileMinMax as it was, then if need to spread, store first sample in _TileToScatterMax and group sync. Less memory/bw.
-// We can spread iff it would go to the fast path? [Maybe] We can spread only if 1-ring neighbour max is bigger than TILE_SIZE 
-// TODO_FCC: Ideas
-//  - As we spread the velocity, assign it a weight similar to the one we will use with the motion blur.. no? 
 
 [numthreads(8, 8, 1)]
 void TileNeighbourhood(uint3 dispatchID : SV_DispatchThreadID, uint gid : SV_GroupIndex, uint2 groupThreadId : SV_GroupThreadID, uint3 groupID : SV_GroupID)
@@ -238,7 +235,6 @@ void TileNeighbourhood(uint3 dispatchID : SV_DispatchThreadID, uint gid : SV_Gro
 
     // Covert to a per pixel velocity.
     float2 maxVelVectorInTiles = DecodeVelocityFromPacked(VelData.xy) * _TileTargetSize.xy * 0.5f;
-
 
 
     // If the central velocity is small (less than a tile), no need to spread it.
