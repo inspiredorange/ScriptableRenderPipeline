@@ -9,7 +9,8 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
     [GenerateHLSL(PackingRules.Exact)]
     public enum ShaderOptions
     {
-        CameraRelativeRendering = 1, // Rendering sets the origin of the world to the position of the primary (scene view) camera
+        CameraRelativeRendering = 1,    // Rendering sets the origin of the world to the position of the primary (scene view) camera
+        UseArrayForTexture2DX = 1,      // If enabled, TEXTURE2DX* macros will expand to texture arrays (required for single-pass stereo instancing)
         PreExposition = 1
     };
 
@@ -18,6 +19,7 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
     public class ShaderConfig
     {
         public static int s_CameraRelativeRendering = (int)ShaderOptions.CameraRelativeRendering;
+        public static int s_UseArrayForTexture2DX = (int)ShaderOptions.UseArrayForTexture2DX;
         public static int s_PreExposition = (int)ShaderOptions.PreExposition;
     }
 }

@@ -122,7 +122,7 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
                 m_PropertyBlock.SetVector(HDShaderIDs._BlitScaleBias, new Vector4(1f, 1f, 0f,0f));
                 m_PropertyBlock.SetFloat(HDShaderIDs._BlitMipLevel, 0f);
                 cmd.SetRenderTarget(destination, 0);
-                cmd.DrawProcedural(Matrix4x4.identity, HDUtils.GetBlitMaterial(), 0, MeshTopology.Triangles, 3, 1, m_PropertyBlock);
+                cmd.DrawProcedural(Matrix4x4.identity, HDUtils.GetBlitMaterial(cmd, source.dimension), 0, MeshTopology.Triangles, 3, 1, m_PropertyBlock);
 
                 // Note: smaller mips are excluded as we don't need them and the gaussian compute works
                 // on 8x8 blocks
@@ -138,7 +138,7 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
                     m_PropertyBlock.SetVector(HDShaderIDs._BlitScaleBias, new Vector4(1f, 1f, 0f,0f));
                     m_PropertyBlock.SetFloat(HDShaderIDs._BlitMipLevel, srcMipLevel);
                     cmd.SetRenderTarget(destination, srcMipLevel + 1);
-                    cmd.DrawProcedural(Matrix4x4.identity, HDUtils.GetBlitMaterial(), 1, MeshTopology.Triangles, 3, 1, m_PropertyBlock);
+                    cmd.DrawProcedural(Matrix4x4.identity, HDUtils.GetBlitMaterial(cmd, source.dimension), 1, MeshTopology.Triangles, 3, 1, m_PropertyBlock);
 
                     // Blur horizontal.
                     m_PropertyBlock.SetTexture(HDShaderIDs._Source, destination);

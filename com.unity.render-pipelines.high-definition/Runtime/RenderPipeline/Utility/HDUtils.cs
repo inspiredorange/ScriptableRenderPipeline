@@ -47,11 +47,14 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
             }
         }
 
-        public static Material GetBlitMaterial()
+        public static Material GetBlitMaterial(CommandBuffer cmd, TextureDimension dimension)
         {
             HDRenderPipeline hdPipeline = RenderPipelineManager.currentPipeline as HDRenderPipeline;
             if (hdPipeline != null)
             {
+                if (ShaderConfig.s_UseArrayForTexture2DX != 0)
+                    CoreUtils.SetKeyword(cmd, "MATERIAL_NO_TEXTURE2DX_ARRAY", dimension != TextureDimension.Tex2DArray);
+
                 return hdPipeline.GetBlitMaterial();
             }
 
@@ -278,7 +281,7 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
             s_PropertyBlock.SetVector(HDShaderIDs._BlitScaleBias, scaleBiasTex);
             s_PropertyBlock.SetVector(HDShaderIDs._BlitScaleBiasRt, scaleBiasRT);
             s_PropertyBlock.SetFloat(HDShaderIDs._BlitMipLevel, mipLevelTex);
-            cmd.DrawProcedural(Matrix4x4.identity, GetBlitMaterial(), bilinear ? 3 : 2, MeshTopology.Quads, 4, 1, s_PropertyBlock);
+            cmd.DrawProcedural(Matrix4x4.identity, GetBlitMaterial(cmd, source.dimension), bilinear ? 3 : 2, MeshTopology.Quads, 4, 1, s_PropertyBlock);
         }
 
         public static void BlitTexture(CommandBuffer cmd, RTHandleSystem.RTHandle source, RTHandleSystem.RTHandle destination, Vector4 scaleBias, float mipLevel, bool bilinear)
@@ -286,7 +289,7 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
             s_PropertyBlock.SetTexture(HDShaderIDs._BlitTexture, source);
             s_PropertyBlock.SetVector(HDShaderIDs._BlitScaleBias, scaleBias);
             s_PropertyBlock.SetFloat(HDShaderIDs._BlitMipLevel, mipLevel);
-            cmd.DrawProcedural(Matrix4x4.identity, GetBlitMaterial(), bilinear ? 1 : 0, MeshTopology.Triangles, 3, 1, s_PropertyBlock);
+            cmd.DrawProcedural(Matrix4x4.identity, GetBlitMaterial(cmd, source.rt.dimension), bilinear ? 1 : 0, MeshTopology.Triangles, 3, 1, s_PropertyBlock);
         }
 
         // In the context of HDRP, the internal render targets used during the render loop are the same for all cameras, no matter the size of the camera.
@@ -331,7 +334,7 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
             s_PropertyBlock.SetTexture(HDShaderIDs._BlitTexture, source);
             s_PropertyBlock.SetVector(HDShaderIDs._BlitScaleBias, scaleBias);
             s_PropertyBlock.SetFloat(HDShaderIDs._BlitMipLevel, 0);
-            DrawFullScreen(cmd, camera.viewport, GetBlitMaterial(), destination, s_PropertyBlock, 0);
+            DrawFullScreen(cmd, camera.viewport, GetBlitMaterial(cmd, source.rt.dimension), destination, s_PropertyBlock, 0);
         }
 
         // This particular case is for blitting a non-scaled texture into a scaled texture. So we setup the partial viewport but don't scale the input UVs.
@@ -346,12 +349,12 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
             // Wanted to make things clean and not use SetGlobalXXX APIs but can't use MaterialPropertyBlock with RenderTargetIdentifier so YEY
             //s_PropertyBlock.SetTexture(HDShaderIDs._BlitTexture, source);
             //s_PropertyBlock.SetVector(HDShaderIDs._BlitScaleBias, camera.scaleBias);
-            cmd.DrawProcedural(Matrix4x4.identity, GetBlitMaterial(), 0, MeshTopology.Triangles, 3, 1);
+            cmd.DrawProcedural(Matrix4x4.identity, GetBlitMaterial(cmd, TextureDimension.Tex2D), 0, MeshTopology.Triangles, 3, 1);
         }
 
         public static void BlitCameraTextureStereoDoubleWide(CommandBuffer cmd, RTHandleSystem.RTHandle source)
         {
-            var mat = GetBlitMaterial();
+            var mat = GetBlitMaterial(cmd, source.rt.dimension);
             mat.SetTexture(HDShaderIDs._BlitTexture, source);
             mat.SetFloat(HDShaderIDs._BlitMipLevel, 0f);
             mat.SetVector(HDShaderIDs._BlitScaleBiasRt, new Vector4(1f, 1f, 0f, 0f));
