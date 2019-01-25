@@ -125,11 +125,11 @@ void TileGenPass(uint3 id : SV_DispatchThreadID, uint gid : SV_GroupIndex, uint2
 
     if (threadIdx == 0)
     {
-        _TileMinMaxVel[groupID.xy] = float3(maxVel.x, maxVel.y, minVelLength);
 #if SCATTERING
-        _TileToScatterMax[groupID.xy] = PackInfoToSpread(maxVel);
+        _TileToScatterMax[groupID.xy] = PackVel(maxVel);
         _TileToScatterMin[groupID.xy] = f32tof16(minVelLength);
-
+#else
+        _TileMinMaxVel[groupID.xy] = float3(maxVel.x, maxVel.y, minVelLength);
 #endif
     }
 }
@@ -179,14 +179,11 @@ void Bresenham(int2 center, float2 lineToDraw, uint centerInfo)
         }
 
         InterlockedMax(_TileToScatterMax[int2(x, y)], uint(centerInfo));
-        //InterlockedMin(_TileToScatterMin[int2(x, y)], minVel);
-
     }
 }
 
 void DDA(int2 center, float2 lineToDraw, uint centerInfo)
 {
-
     int2 maxCoords = int2(_TileTargetSize.xy - 1);
     
     int2 startPoint = center;
@@ -210,11 +207,12 @@ void DDA(int2 center, float2 lineToDraw, uint centerInfo)
     float end = endPoint.x * dirSign;
     float2 currPoint = startPoint;
 
-    const int maxIter = 32;
+    const int maxIter = 64;
     for (int i=0; ((currPoint.x * dirSign) <= end) && (i < maxIter); ++i)
     {
         currPoint += step;
         float2 hitPixel = permute ? currPoint.yx : currPoint;
+        hitPixel = clamp(hitPixel, 0, _TileTargetSize.xy);
         InterlockedMax(_TileToScatterMax[ceil(hitPixel)], uint(centerInfo));
     }
 }
@@ -244,9 +242,8 @@ void TileNeighbourhood(uint3 dispatchID : SV_DispatchThreadID, uint gid : SV_Gro
 
 
     // If the central velocity is small (less than a tile), no need to spread it.
-    if (VelocityLengthInPixelsFromEncoded(VelData) > TILE_SIZE * 0.9f)
+    if (VelocityLengthInPixelsFromEncoded(VelData) > TILE_SIZE * 0.5f)
     {
-
         // Spread Forward
         DDA(id, maxVelVectorInTiles, packedTileInfo);
         // Spread Backward
@@ -312,8 +309,9 @@ void TileNeighbourhood(uint3 dispatchID : SV_DispatchThreadID, uint gid : SV_Gro
 #endif
 
 
-#if MERGE_PASS && SCATTERING
+#if MERGE_PASS
 
+#if SCATTERING
 Texture2D<uint> _TileToScatterMax;
 Texture2D<uint> _TileToScatterMin;
 RW_TEXTURE2D(float3, _TileMaxNeighbourhood);
@@ -324,6 +322,11 @@ void TileMinMaxMerge(uint3 dispatchID : SV_DispatchThreadID, uint gid : SV_Group
     int2 id = dispatchID.xy;
     _TileMaxNeighbourhood[id] = float3(UnpackVel(_TileToScatterMax[id]), f16tof32(_TileToScatterMin[id]));
 }
-
+#else
+[numthreads(8, 8, 1)]
+void TileMinMaxMerge(uint3 dispatchID : SV_DispatchThreadID, uint gid : SV_GroupIndex, uint2 groupThreadId : SV_GroupThreadID, uint3 groupID : SV_GroupID)
+{
+}
+#endif
 
 #endif

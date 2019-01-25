@@ -1,7 +1,6 @@
 #include "Packages/com.unity.render-pipelines.high-definition/Runtime/PostProcessing/Shaders/MotionBlurCommon.hlsl"
 
 #pragma kernel MotionBlurCS
-//#pragma enable_d3d11_debug_symbols
 
 RW_TEXTURE2D(float3, _OutputTexture);
 TEXTURE2D(_InputTexture);
@@ -30,7 +29,8 @@ TEXTURE2D(_TileMaxNeighbourhood);
 #define CONSTANT 1
 #define ONLY_SPREAD 2
 #define ONLY_DEPTH_COMPARE 3
-
+#define CUSTOM 4
+#define ONLY_DOT_WEIGHT 5
 #define DEBUG_WEIGHT NO_DEBUG
 
 // ------------Debug Execution ------------------
@@ -47,6 +47,9 @@ TEXTURE2D(_TileMaxNeighbourhood);
 // When this is set to 1, samples are taken from both the central direction and the maximum direction in the tile. This reduces bugs when very different velocities are available in a tile. 
 // This however also can cause the blur to look slightly different. 
 #define GUERTIN2014_DOUBLE_DIR 0
+
+#define DOT_WEIGHTING 1
+#define DOT_MULTIPLIER 2 * DOT_WEIGHTING
 
 // ---------------------------------------------
 // Misc utils
@@ -97,16 +100,21 @@ float2 SpreadCompare(float offsetLength, float2 spreadLength, float pixelToSampl
     return saturate(pixelToSampleScale * spreadLength - max(offsetLength - 1.0, 0.0));
 }
 
-float SampleWeight(float centralDepth, float sampleDepth, float offsetLength, float centralSpreadLength, float sampleSpreadLength, float pixelToSampleScale, float depthScale)
+float SampleWeight(float centralDepth, float sampleDepth, float offsetLength, float centralSpreadLength, float sampleSpreadLength, float pixelToSampleScale, float depthScale, float newWeight)
 {
     float2 depthWeights = DepthCompare(centralDepth, sampleDepth, depthScale);
     float2 spread = SpreadCompare(offsetLength, float2(centralSpreadLength, sampleSpreadLength), pixelToSampleScale);
+#if DOT_WEIGHTING
+    spread.y *= newWeight;
+#endif
 #if DEBUG_WEIGHT == CONSTANT
     return 1;
 #elif DEBUG_WEIGHT == ONLY_SPREAD
     return spread.y;
 #elif DEBUG_WEIGHT == ONLY_DEPTH_COMPARE
     return depthWeights.y ;
+#elif DEBUG_WEIGHT == CUSTOM
+    return abs(depthWeights.x*spread.x - depthWeights.y*spread.y);
 #else
     return dot(depthWeights, spread);
 #endif
@@ -128,27 +136,33 @@ float3 ProcessSampleFastPath(uint sampleNumber, float2 dir, float invSampleCount
     float2 currDir = dirSign * dir;
 
     float  offsetLength = (sampleNumber + 0.5) + (dirSign * (randomVal - 0.5));
-    float2 sampleUV = min(centralUV + (offsetLength*invSampleCount) * currDir, 1.0f) * _ScreenToTargetScale.xy;
+    float2 sampleUV = min(centralUV + (offsetLength*invSampleCount) * currDir, 1.0f - 0.5f * _ScreenSize.zw) * _ScreenToTargetScale.xy;
 
     float3 sampleColor    = SAMPLE_TEXTURE2D_LOD(_InputTexture, s_point_clamp_sampler, sampleUV, 0).xyz;
 
     return sampleColor;
 }
 
-float4 ProcessSample(uint sampleNumber, float2 dir, float invSampleCount, float2 centralUV, float centralDepth, float centralVelocityLen, float pixelToSampleScale, float randomVal, float dirSign, out float outDepth, out float outVelLength)
+float4 ProcessSample(uint sampleNumber, float2 dir, float invSampleCount, float2 centralUV, float centralDepth, float centralVelocityLen, float pixelToSampleScale, float randomVal, float dirSign,
+                    out float outDepth, out float outVelLength)
 {
     float2 currDir = dirSign * dir;
 
     float  offsetLength = (sampleNumber + 0.5) + (dirSign * (randomVal - 0.5));
-    float2 sampleUV = min(centralUV + (offsetLength*invSampleCount) * currDir, 1.0f) * _ScreenToTargetScale.xy;
+    float2 sampleUV = min(centralUV + (offsetLength*invSampleCount) * currDir, 1.0f - 0.5f * _ScreenSize.zw) * _ScreenToTargetScale.xy;
 
     float3 sampleVelDepth = SAMPLE_TEXTURE2D_LOD(_VelocityAndDepth, s_point_clamp_sampler, sampleUV, 0).xyz;
     float3 sampleColor    = SAMPLE_TEXTURE2D_LOD(_InputTexture, s_point_clamp_sampler, sampleUV, 0).xyz;
 
+
     outVelLength = VelocityLengthInPixelsFromEncoded(sampleVelDepth.xy);
     outDepth = sampleVelDepth.z;
-
-    float  sampleWeight = SampleWeight(centralDepth, outDepth, offsetLength, centralVelocityLen, outVelLength, pixelToSampleScale, SOFT_Z_EXTENT);
+    float velDiffWeight = 1;
+#if DOT_WEIGHTING
+    float2 sampleVel = DecodeVelocityFromPacked(sampleVelDepth.xy);
+    velDiffWeight = (centralVelocityLen > 0 && outVelLength > 0.3) ? saturate(abs(dot(sampleVel, currDir) / dot(currDir, currDir)) * DOT_MULTIPLIER) : 1;
+#endif
+    float  sampleWeight = SampleWeight(centralDepth, outDepth, offsetLength, centralVelocityLen, outVelLength, pixelToSampleScale, SOFT_Z_EXTENT, velDiffWeight);
 
     return float4(sampleColor, sampleWeight);
 }
@@ -269,11 +283,10 @@ void MotionBlurCS(uint3 dispatchThreadId : SV_DispatchThreadID)
                 float fw_VelLength, bw_VelLength;
                 float4 fw_Sample = ProcessSample(i, dir, invSampleCount, centerSampleUV, centralDepth, centralVelocityLen, pixelToSampleScale, randomVal, -1, fw_Depth, fw_VelLength);
                 float4 bw_Sample = ProcessSample(i, dir, invSampleCount, centerSampleUV, centralDepth, centralVelocityLen, pixelToSampleScale, randomVal, 1, bw_Depth, bw_VelLength);
-
-                // Mirror weights
 #if MIRROR_WEIGHTS
                 MirrorWeights(fw_Depth, bw_Depth, fw_VelLength, bw_VelLength, fw_Sample.w, bw_Sample.w);
 #endif
+
                 accumulation += float4(fw_Sample.w * fw_Sample.rgb, fw_Sample.w) + float4(bw_Sample.w * bw_Sample.rgb, bw_Sample.w);
             }
             accumulation *= invSampleCount;
@@ -283,6 +296,11 @@ void MotionBlurCS(uint3 dispatchThreadId : SV_DispatchThreadID)
 #if DEBUG_VIEW == WEIGHT_VIS
             colorAccumulation = accumulation.w;
 #endif
+#if DEBUG_VIEW == CUSTOM
+            colorAccumulation = saturate(abs(dot(centralTapVelocity, maxVel)
+                / dot(maxVel, maxVel)) * DOT_MULTIPLIER);
+#endif
+
         }
 
 
