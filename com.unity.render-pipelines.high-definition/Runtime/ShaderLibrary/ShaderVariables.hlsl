@@ -10,12 +10,18 @@
 // As I haven't change the variables name yet, I simply don't define anything, and I put the transform function at the end of the file outside the guard header.
 // This need to be fixed.
 
-#if defined(UNITY_SINGLE_PASS_STEREO) || defined(UNITY_STEREO_INSTANCING_ENABLED)
-    #define USING_STEREO_MATRICES
+// Early defines for single-pass stereo instancing
+// XRTODO: refactor to use proper definition from UnityInstancing.hlsl and support more APIs
+#if defined(STEREO_INSTANCING_ON) && defined(SHADER_API_D3D11)
+    #define UNITY_STEREO_INSTANCING_ENABLED
 #endif
 
 #if defined(UNITY_STEREO_INSTANCING_ENABLED) && !defined(SHADEROPTIONS_USE_ARRAY_FOR_TEXTURE2DX)
     #error Single-pass stereo instancing requires shader option UseArrayForTexture2DX
+#endif
+
+#if defined(UNITY_SINGLE_PASS_STEREO) || defined(UNITY_STEREO_INSTANCING_ENABLED)
+    #define USING_STEREO_MATRICES
 #endif
 
 #if defined(USING_STEREO_MATRICES)
