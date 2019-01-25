@@ -1209,8 +1209,7 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
         {
             // -----------------------------------------------------------------------------
 
-            const bool scattering = true;
-
+            bool scattering =  SystemInfo.IsFormatSupported(GraphicsFormat.R32_UInt, FormatUsage.LoadStore) && SystemInfo.IsFormatSupported(GraphicsFormat.R16_UInt, FormatUsage.LoadStore);
             int tileSize = 32;
 
             if (scattering)
@@ -1356,9 +1355,9 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
             m_Pool.Recycle(tileToScatterMin);
         }
 
-        #endregion
+#endregion
 
-        #region Panini Projection
+#region Panini Projection
 
         // Back-ported & adapted from the work of the Stockholm demo team - thanks Lasse!
         void DoPaniniProjection(CommandBuffer cmd, HDCamera camera, RTHandle source, RTHandle destination)
@@ -1432,9 +1431,9 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
             return cylPos * (viewDist / cylDist);
         }
 
-        #endregion
+#endregion
 
-        #region Bloom
+#region Bloom
 
         // TODO: All of this could be simplified and made faster once we have the ability to bind mips as SRV
         unsafe void DoBloom(CommandBuffer cmd, HDCamera camera, RTHandle source, ComputeShader uberCS, int uberKernel)
@@ -1608,9 +1607,9 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
             cmd.SetComputeVectorParam(uberCS, HDShaderIDs._BloomDirtScaleOffset, dirtTileOffset);
         }
 
-        #endregion
+#endregion
 
-        #region Lens Distortion
+#region Lens Distortion
 
         void DoLensDistortion(CommandBuffer cmd, ComputeShader cs, int kernel, UberPostFeatureFlags flags)
         {
@@ -1638,9 +1637,9 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
             cmd.SetComputeVectorParam(cs, HDShaderIDs._DistortionParams2, p2);
         }
 
-        #endregion
+#endregion
 
-        #region Chromatic Aberration
+#region Chromatic Aberration
 
         void DoChromaticAberration(CommandBuffer cmd, ComputeShader cs, int kernel, UberPostFeatureFlags flags)
         {
@@ -1681,9 +1680,9 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
             cmd.SetComputeVectorParam(cs, HDShaderIDs._ChromaParams, settings);
         }
 
-        #endregion
+#endregion
 
-        #region Vignette
+#region Vignette
 
         void DoVignette(CommandBuffer cmd, ComputeShader cs, int kernel, UberPostFeatureFlags flags)
         {
@@ -1709,9 +1708,9 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
             }
         }
 
-        #endregion
+#endregion
 
-        #region Color Grading
+#region Color Grading
 
         // TODO: User lut support
         void DoColorGrading(CommandBuffer cmd, ComputeShader cs, int kernel)
@@ -1923,9 +1922,9 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
             highlights.w = 0f;
         }
 
-        #endregion
+#endregion
 
-        #region Final Pass
+#region Final Pass
 
         void DoFinalPass(CommandBuffer cmd, HDCamera camera, BlueNoise blueNoise, RTHandle source)
         {
@@ -1947,13 +1946,13 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
 
                 if (texture != null) // Fail safe if the resources asset breaks :/
                 {
-                    #if HDRP_DEBUG_STATIC_POSTFX
+#if HDRP_DEBUG_STATIC_POSTFX
                     int offsetX = 0;
                     int offsetY = 0;
-                    #else
+#else
                     int offsetX = (int)(Random.value * texture.width);
                     int offsetY = (int)(Random.value * texture.height);
-                    #endif
+#endif
 
                     m_FinalPassMaterial.EnableKeyword("GRAIN");
                     m_FinalPassMaterial.SetTexture(HDShaderIDs._GrainTexture, texture);
@@ -1968,11 +1967,11 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
             {
                 var blueNoiseTexture = blueNoise.textureArray16L;
 
-                #if HDRP_DEBUG_STATIC_POSTFX
+#if HDRP_DEBUG_STATIC_POSTFX
                 int textureId = 0;
-                #else
+#else
                 int textureId = Time.frameCount % blueNoiseTexture.depth;
-                #endif
+#endif
 
                 m_FinalPassMaterial.SetTexture(HDShaderIDs._BlueNoiseTexture, blueNoiseTexture);
                 m_FinalPassMaterial.SetVector(HDShaderIDs._DitherParams, new Vector3(blueNoiseTexture.width, blueNoiseTexture.height, textureId));
@@ -1992,9 +1991,9 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
             HDUtils.DrawFullScreen(cmd, camera.viewport, m_FinalPassMaterial, BuiltinRenderTextureType.CameraTarget, null, pass);
         }
 
-        #endregion
+#endregion
 
-        #region Render Target Management Utilities
+#region Render Target Management Utilities
 
         // Quick utility class to manage temporary render targets for post-processing and keep the
         // code readable.
@@ -2077,6 +2076,6 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
             }
         }
 
-        #endregion
+#endregion
     }
 }

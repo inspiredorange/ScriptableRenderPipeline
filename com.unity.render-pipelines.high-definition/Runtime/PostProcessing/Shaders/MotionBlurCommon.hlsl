@@ -3,7 +3,11 @@
 #include "Packages/com.unity.render-pipelines.high-definition/Runtime/Material/Builtin/BuiltinData.hlsl"
 
 
+#if defined(SHADER_API_PSSL) && (UNITY_VERSION < 20192)
+#define SCATTERING 0
+#else
 #define SCATTERING 1
+#endif 
 
 #if SCATTERING
 #define TILE_SIZE                   16u

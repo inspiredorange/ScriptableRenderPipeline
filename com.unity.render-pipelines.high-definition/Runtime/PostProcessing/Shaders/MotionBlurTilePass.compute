@@ -10,12 +10,6 @@
 #define USE_WAVE_INTRINSICS         defined(SUPPORTS_WAVE_INTRINSICS)
 
 
-uint PackInfoToSpread(float2 maxVel)
-{
-    uint2 uintVal = f32tof16(maxVel);
-    return (uintVal.x << 16) | uintVal.y;
-}
-
 uint PackVel(float2 packedVel)
 {
     // Most relevant bits contain the length of the velocity, so that we can sort directly on uint value.
@@ -140,9 +134,7 @@ void TileGenPass(uint3 id : SV_DispatchThreadID, uint gid : SV_GroupIndex, uint2
 #if SCATTERING
 
 // Line drawing algorithms.
-// TODO: Consider a conservative line rasterization.
-#if 0
-void Bresenham(int2 center, float2 lineToDraw, uint centerInfo)
+void LineDrawing(int2 center, float2 lineToDraw, uint centerInfo)
 {
     int2 maxCoords = int2(_TileTargetSize.xy - 1);
 
@@ -151,9 +143,9 @@ void Bresenham(int2 center, float2 lineToDraw, uint centerInfo)
     int2 endPoint = int2(ceil(startPoint.x + lineToDraw.x), ceil(startPoint.y + lineToDraw.y));
     endPoint = clamp(endPoint, int2(0, 0), maxCoords);
 
-    int2 dXY = int2(abs(startPoint.x - endPoint.x), abs(startPoint.y - endPoint.y));
-    int2 sXY = int2(startPoint.x < endPoint.x ? 1 : -1, startPoint.y < endPoint.y ? 1 : -1);
-    int err = (dXY.x > dXY.y ? dXY.x : -dXY.y) / 2;
+    int2 delta = int2(abs(startPoint - endPoint));
+    int2 steps = int2(startPoint.x < endPoint.x ? 1 : -1, startPoint.y < endPoint.y ? 1 : -1);
+    int tMax = (delta.x > delta.y ? delta.x : -delta.y) / 2;
 
     int x = startPoint.x;
     int y = startPoint.y;
@@ -165,26 +157,22 @@ void Bresenham(int2 center, float2 lineToDraw, uint centerInfo)
         {
             break;
         }
-
-        int e2 = err;
-
-        if (e2 > -dXY.x)
+        else if (tMax > -delta.x)
         {
-            err -= dXY.y;
-            x += sXY.x;
+            tMax -= delta.y;
+            x += steps.x;
         }
-
-        if (e2 < dXY.y)
+        else if (tMax < delta.y)
         {
-            err += dXY.x;
-            y += sXY.y;
+            tMax += delta.x;
+            y += steps.y;
         }
 
         InterlockedMax(_TileToScatterMax[int2(x, y)], uint(centerInfo));
     }
 }
-#endif
 
+#if 0 
 void DDA(int2 center, float2 lineToDraw, uint centerInfo)
 {
     int2 maxCoords = int2(_TileTargetSize.xy);
@@ -193,7 +181,6 @@ void DDA(int2 center, float2 lineToDraw, uint centerInfo)
     int2 endPoint = int2(ceil(startPoint.x + lineToDraw.x), ceil(startPoint.y + lineToDraw.y));
     endPoint = clamp(endPoint, int2(0, 0), maxCoords);
 
-    float dirSign = sign(lineToDraw.x);
 
     bool permute = false;
     if (abs(lineToDraw.x) < abs(lineToDraw.y))
@@ -203,6 +190,7 @@ void DDA(int2 center, float2 lineToDraw, uint centerInfo)
         startPoint = startPoint.yx;
         endPoint = endPoint.yx;
     }
+    float dirSign = sign(lineToDraw.x);
 
     float invDeltaX = dirSign / lineToDraw.x;
     float2 step = float2(dirSign, lineToDraw.y * invDeltaX);
@@ -219,6 +207,7 @@ void DDA(int2 center, float2 lineToDraw, uint centerInfo)
         InterlockedMax(_TileToScatterMax[ceil(hitPixel)], uint(centerInfo));
     }
 }
+#endif
 
 [numthreads(8, 8, 1)]
 void TileNeighbourhood(uint3 dispatchID : SV_DispatchThreadID, uint gid : SV_GroupIndex, uint2 groupThreadId : SV_GroupThreadID, uint3 groupID : SV_GroupID)
@@ -241,9 +230,9 @@ void TileNeighbourhood(uint3 dispatchID : SV_DispatchThreadID, uint gid : SV_Gro
     if (VelocityLengthInPixelsFromEncoded(VelData) > TILE_SIZE * 0.5f)
     {
         // Spread Forward
-        DDA(id, maxVelVectorInTiles, packedTileInfo);
+        LineDrawing(id, maxVelVectorInTiles, packedTileInfo);
         // Spread Backward
-        DDA(id, -maxVelVectorInTiles, packedTileInfo);
+        LineDrawing(id, -maxVelVectorInTiles, packedTileInfo);
     }
 
     // Find min of the tile in the 1-ring neighbourhood? TODO_FCC: Verify this is ok. I don't like it that much.
