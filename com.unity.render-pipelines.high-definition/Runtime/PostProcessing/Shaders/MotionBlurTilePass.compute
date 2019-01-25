@@ -310,23 +310,16 @@ void TileNeighbourhood(uint3 dispatchID : SV_DispatchThreadID, uint gid : SV_Gro
 
 
 #if MERGE_PASS
-
-#if SCATTERING
 Texture2D<uint> _TileToScatterMax;
 Texture2D<uint> _TileToScatterMin;
 RW_TEXTURE2D(float3, _TileMaxNeighbourhood);
 
 [numthreads(8, 8, 1)]
-void TileMinMaxMerge(uint3 dispatchID : SV_DispatchThreadID, uint gid : SV_GroupIndex, uint2 groupThreadId : SV_GroupThreadID, uint3 groupID : SV_GroupID)
+void TileMinMaxMerge(uint3 dispatchID : SV_DispatchThreadID)
 {
+#if SCATTERING
     int2 id = dispatchID.xy;
     _TileMaxNeighbourhood[id] = float3(UnpackVel(_TileToScatterMax[id]), f16tof32(_TileToScatterMin[id]));
-}
-#else
-[numthreads(8, 8, 1)]
-void TileMinMaxMerge(uint3 dispatchID : SV_DispatchThreadID, uint gid : SV_GroupIndex, uint2 groupThreadId : SV_GroupThreadID, uint3 groupID : SV_GroupID)
-{
-}
 #endif
-
+}
 #endif
