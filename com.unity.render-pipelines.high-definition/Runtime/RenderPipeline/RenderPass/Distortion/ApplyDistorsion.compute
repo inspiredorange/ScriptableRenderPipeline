@@ -4,8 +4,8 @@
 
 #pragma only_renderers d3d11 ps4 xboxone vulkan metal switch
 
-TEXTURE2D(_DistortionTexture);
-RW_TEXTURE2D(float4, _Destination);
+TEXTURE2DX(_DistortionTexture);
+RW_TEXTURE2DX(float4, _Destination);
 
 CBUFFER_START(cb)
     float4 _Size;
@@ -20,7 +20,7 @@ void KMain(uint2 groupId : SV_GroupID, uint2 groupThreadId : SV_GroupThreadID, u
     const float _FetchBias = 0.9;
 
     // Get distortion values
-    float4 encodedDistortion = LOAD_TEXTURE2D(_DistortionTexture, dispatchThreadId);
+    float4 encodedDistortion = LOAD_TEXTURE2DX(_DistortionTexture, dispatchThreadId);
 
     float2 distortion;
     float distortionBlur;
@@ -47,7 +47,7 @@ void KMain(uint2 groupId : SV_GroupID, uint2 groupThreadId : SV_GroupThreadID, u
     float2 distordedDistortion;
     float distordedDistortionBlur;
     bool distordedIsSourceValid;
-    float4 encodedDistordedDistortion = LOAD_TEXTURE2D(_DistortionTexture, distortedEncodedDistortionId);
+    float4 encodedDistordedDistortion = LOAD_TEXTURE2DX(_DistortionTexture, distortedEncodedDistortionId);
     DecodeDistortion(encodedDistordedDistortion, distordedDistortion, distordedDistortionBlur, distordedIsSourceValid);
 
     if (!distordedIsSourceValid)
@@ -59,7 +59,7 @@ void KMain(uint2 groupId : SV_GroupID, uint2 groupThreadId : SV_GroupThreadID, u
     // Get source pixel for distortion
     float2 distordedUV = float2((dispatchThreadId + 0.5) + distortion * _FetchBias) * _Size.zw;
     float mip = (_ColorPyramidScale.z - 1) * clamp(distortionBlur, 0.0, 1.0);
-    float4 sampled = SAMPLE_TEXTURE2D_LOD(_ColorPyramidTexture, s_trilinear_clamp_sampler, distordedUV * _ColorPyramidScale.xy, mip);
+    float4 sampled = SAMPLE_TEXTURE2DX_LOD(_ColorPyramidTexture, s_trilinear_clamp_sampler, distordedUV * _ColorPyramidScale.xy, mip);
 
-    _Destination[dispatchThreadId] = sampled;
+    _Destination[COORD_TEXTURE2DX(dispatchThreadId)] = sampled;
 }

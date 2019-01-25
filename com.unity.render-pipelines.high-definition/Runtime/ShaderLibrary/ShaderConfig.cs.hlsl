@@ -8,7 +8,7 @@
 // UnityEngine.Experimental.Rendering.HDPipeline.ShaderOptions:  static fields
 //
 #define SHADEROPTIONS_CAMERA_RELATIVE_RENDERING (1)
-#define SHADEROPTIONS_USE_ARRAY_FOR_TEXTURE2DX (1)
+#define SHADEROPTIONS_USE_ARRAY_FOR_TEXTURE2DX (0)
 #define SHADEROPTIONS_PRE_EXPOSITION (1)
 
 

@@ -17,10 +17,10 @@
 //#pragma enable_d3d11_debug_symbols
 
 #ifdef ENABLE_MSAA
-    Texture2D<float4> _CameraDepthValues;
+    TEXTURE2DX(_CameraDepthValues);
 #endif
 
-RWTexture2D<float> _DeferredShadowTextureUAV;
+RW_TEXTURE2DX(float, _DeferredShadowTextureUAV);
 
 CBUFFER_START(DeferredShadowParameters)
 float4  _DirectionalLightDirection;
@@ -108,7 +108,7 @@ float ScreenSpaceShadowRayCast(float3 positionWS, float3 rayDirWS, float rayLeng
 
 #ifdef ENABLE_MSAA
         // Depth buffer depth for this sample
-        float sampleDepth = SAMPLE_TEXTURE2D_LOD(_CameraDepthValues, s_point_clamp_sampler, sampleAlongRay.xy, 0.0f).y;
+        float sampleDepth = SAMPLE_TEXTURE2DX_LOD(_CameraDepthValues, s_point_clamp_sampler, sampleAlongRay.xy, 0.0f).y;
 #else
         // Depth buffer depth for this sample
         float sampleDepth = SampleDepth(saturate(sampleAlongRay.xy), tracingHalfRes);
@@ -166,7 +166,7 @@ void DEFERRED_CONTACT_SHADOW_GENERIC(uint2 groupThreadId : SV_GroupThreadID, uin
     uint2 tileCoord = groupId;
 
 #ifdef ENABLE_MSAA
-    float depth = LOAD_TEXTURE2D(_CameraDepthValues, pixelCoord.xy).z;
+    float depth = LOAD_TEXTURE2DX(_CameraDepthValues, pixelCoord.xy).z;
 #else
     float depth = LOAD_TEXTURE2D(_CameraDepthTexture, pixelCoord.xy).x;
 #endif
@@ -181,5 +181,5 @@ void DEFERRED_CONTACT_SHADOW_GENERIC(uint2 groupThreadId : SV_GroupThreadID, uin
 
     float contactShadow = ComputeContactShadow(posInput, direction);
 
-    _DeferredShadowTextureUAV[pixelCoord] = 1.0f - contactShadow;
+    _DeferredShadowTextureUAV[COORD_TEXTURE2DX(pixelCoord)] = 1.0f - contactShadow;
 }

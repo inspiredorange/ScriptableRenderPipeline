@@ -59,7 +59,7 @@ float2 ComputeVelocity(PositionInputs posInput, float2 sampledVelocity)
 void VelPreppingCS(uint3 dispatchThreadId : SV_DispatchThreadID)
 {
     float3 velAndDepth = 0.0f;
-    float4 velocityBufferSample = LOAD_TEXTURE2D(_CameraMotionVectorsTexture, dispatchThreadId.xy);
+    float4 velocityBufferSample = LOAD_TEXTURE2DX(_CameraMotionVectorsTexture, dispatchThreadId.xy);
     // if we have a value > 1.0f, it means we have selected the "no motion option", hence we force velocity 0. 
     bool forceNoMotion = PixelSetAsNoMotionVectors(velocityBufferSample);
 

@@ -10,7 +10,7 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
     public enum ShaderOptions
     {
         CameraRelativeRendering = 1,    // Rendering sets the origin of the world to the position of the primary (scene view) camera
-        UseArrayForTexture2DX = 1,      // If enabled, TEXTURE2DX* macros will expand to texture arrays (required for single-pass stereo instancing)
+        UseArrayForTexture2DX = 0,      // If enabled, TEXTURE2DX* macros will expand to texture arrays (required for single-pass stereo instancing)
         PreExposition = 1
     };
 
