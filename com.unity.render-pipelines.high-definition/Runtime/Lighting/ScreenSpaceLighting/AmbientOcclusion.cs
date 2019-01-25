@@ -290,7 +290,7 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
             if (!IsActive(camera, settings))
             {
                 // No AO applied - neutral is black, see the comment in the shaders
-                cmd.SetGlobalTexture(HDShaderIDs._AmbientOcclusionTexture, Texture2D.blackTexture);
+                cmd.SetGlobalTexture(HDShaderIDs._AmbientOcclusionTexture, HDUtils.GetBlackTexture2DX());
                 cmd.SetGlobalVector(HDShaderIDs._AmbientOcclusionParam, Vector4.zero);
                 return;
             }

@@ -15,6 +15,30 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
         static public HDAdditionalCameraData s_DefaultHDAdditionalCameraData { get { return ComponentSingleton<HDAdditionalCameraData>.instance; } }
         static public AdditionalShadowData s_DefaultAdditionalShadowData { get { return ComponentSingleton<AdditionalShadowData>.instance; } }
 
+        public static RenderTargetIdentifier GetClearTexture2DX()
+        {
+            if (ShaderConfig.s_UseArrayForTexture2DX != 0)
+                return clearTexture2DArray;
+
+            return clearTexture;
+        }
+
+        public static RenderTargetIdentifier GetBlackTexture2DX()
+        {
+            if (ShaderConfig.s_UseArrayForTexture2DX != 0)
+                return blackTexture2DArray;
+
+            return Texture2D.blackTexture;
+        }
+
+        public static RenderTargetIdentifier GetWhiteTexture2DX()
+        {
+            if (ShaderConfig.s_UseArrayForTexture2DX != 0)
+                return whiteTexture2DArray;
+
+            return Texture2D.whiteTexture;
+        }
+
         static Texture2D m_ClearTexture;
         public static Texture2D clearTexture
         {
@@ -28,6 +52,60 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
                 }
 
                 return m_ClearTexture;
+            }
+        }
+
+        private static Texture2DArray CreateTexture2DArrayFromTexture2D(int slices, Texture2D source, string name)
+        {
+            Texture2DArray texArray = new Texture2DArray(1, 1, slices, TextureFormat.ARGB32, false) { name = name };
+            for (int i = 0; i < slices; ++i)
+                Graphics.CopyTexture(source, 0, 0, texArray, i, 0);
+
+            return texArray;
+        }
+
+        static Texture2DArray m_ClearTexture2DArray;
+        public static Texture2DArray clearTexture2DArray
+        {
+            get
+            {
+                const int kMaxSlices = 2;
+                //Debug.Assert(XRGraphics.eyeCount <= kMaxSlices);
+
+                if (m_ClearTexture2DArray == null)
+                    m_ClearTexture2DArray = CreateTexture2DArrayFromTexture2D(kMaxSlices, clearTexture, "Clear Texture2DArray");
+
+                return m_ClearTexture2DArray;
+            }
+        }
+
+        static Texture2DArray m_BlackTexture2DArray;
+        public static Texture2DArray blackTexture2DArray
+        {
+            get
+            {
+                const int kMaxSlices = 2;
+                //Debug.Assert(XRGraphics.eyeCount <= kMaxDepth);
+
+                if (m_BlackTexture2DArray == null)
+                    m_BlackTexture2DArray = CreateTexture2DArrayFromTexture2D(kMaxSlices, Texture2D.blackTexture, "Black Texture2DArray");
+
+                return m_BlackTexture2DArray;
+            }
+        }
+
+        static Texture2DArray m_WhiteTexture2DArray;
+        public static Texture2DArray whiteTexture2DArray
+        {
+            get
+            {
+                const int kMaxSlices = 2;
+                //Debug.Assert(XRGraphics.eyeCount <= kMaxDepth);
+
+                if (m_WhiteTexture2DArray == null)
+                    m_WhiteTexture2DArray = CreateTexture2DArrayFromTexture2D(kMaxSlices, Texture2D.whiteTexture, "White Texture2DArray");
+
+                return m_WhiteTexture2DArray;
             }
         }
 
@@ -578,7 +656,7 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
                     buildTarget == UnityEditor.BuildTarget.PS4 ||
                     buildTarget == UnityEditor.BuildTarget.Switch);
         }
-        
+
         public static bool AreGraphicsAPIsSupported(UnityEditor.BuildTarget target, out GraphicsDeviceType unsupportedGraphicDevice)
         {
             unsupportedGraphicDevice = GraphicsDeviceType.Null;
