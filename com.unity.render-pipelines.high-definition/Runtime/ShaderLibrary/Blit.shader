@@ -4,7 +4,7 @@ Shader "Hidden/HDRP/Blit"
 
         #pragma target 4.5
         #pragma only_renderers d3d11 ps4 xboxone vulkan metal switch
-        #pragma multi_compile _ MATERIAL_NO_TEXTURE2DX_ARRAY
+        #pragma multi_compile _ FORCE_NO_TEXTURE2DX_ARRAY
         #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/Common.hlsl"
         #include "Packages/com.unity.render-pipelines.high-definition/Runtime/ShaderLibrary/ShaderVariables.hlsl"
 

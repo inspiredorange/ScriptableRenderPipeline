@@ -42,7 +42,7 @@
 // Helper macros to handle XR instancing with Texture2DArray
 // Render textures allocated with the flag 'xrInstancing' used Texture2DArray where each slice is associated to an eye.
 // unity_StereoEyeIndex is used to select the eye in the current context.
-#if (SHADEROPTIONS_USE_ARRAY_FOR_TEXTURE2DX != 0) && !defined(MATERIAL_NO_TEXTURE2DX_ARRAY)
+#if (SHADEROPTIONS_USE_ARRAY_FOR_TEXTURE2DX != 0) && !defined(FORCE_NO_TEXTURE2DX_ARRAY)
     #define USE_TEXTURE2DX_AS_ARRAY
 #endif
 

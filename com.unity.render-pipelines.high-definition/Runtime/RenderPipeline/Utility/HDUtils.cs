@@ -131,7 +131,7 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
             if (hdPipeline != null)
             {
                 if (ShaderConfig.s_UseArrayForTexture2DX != 0)
-                    CoreUtils.SetKeyword(cmd, "MATERIAL_NO_TEXTURE2DX_ARRAY", dimension != TextureDimension.Tex2DArray);
+                    CoreUtils.SetKeyword(cmd, "FORCE_NO_TEXTURE2DX_ARRAY", dimension != TextureDimension.Tex2DArray);
 
                 return hdPipeline.GetBlitMaterial();
             }
