@@ -35,7 +35,7 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
                 HairMasterNode.NormalSlotId,
                 HairMasterNode.SpecularOcclusionSlotId,
                 HairMasterNode.BentNormalSlotId,
-                HairMasterNode.TangentSlotId,
+                HairMasterNode.HairStrandDirectionSlotId,
                 HairMasterNode.SubsurfaceMaskSlotId,
                 HairMasterNode.ThicknessSlotId,
                 HairMasterNode.DiffusionProfileSlotId,
@@ -312,7 +312,7 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
                 HairMasterNode.NormalSlotId,
                 HairMasterNode.SpecularOcclusionSlotId,
                 HairMasterNode.BentNormalSlotId,
-                HairMasterNode.TangentSlotId,
+                HairMasterNode.HairStrandDirectionSlotId,
                 HairMasterNode.SubsurfaceMaskSlotId,
                 HairMasterNode.ThicknessSlotId,
                 HairMasterNode.DiffusionProfileSlotId,
@@ -372,7 +372,7 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
                 HairMasterNode.NormalSlotId,
                 HairMasterNode.SpecularOcclusionSlotId,
                 HairMasterNode.BentNormalSlotId,
-                HairMasterNode.TangentSlotId,
+                HairMasterNode.HairStrandDirectionSlotId,
                 HairMasterNode.SubsurfaceMaskSlotId,
                 HairMasterNode.ThicknessSlotId,
                 HairMasterNode.DiffusionProfileSlotId,
@@ -388,6 +388,8 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
                 HairMasterNode.SecondarySpecularTintSlotId,
                 HairMasterNode.SecondarySmoothnessSlotId,
                 HairMasterNode.SecondarySpecularShiftSlotId,
+                HairMasterNode.LightingSlotId,
+                HairMasterNode.BackLightingSlotId,
             },
             VertexShaderSlots = new List<int>()
             {
@@ -486,7 +488,7 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
                     {
                         activeFields.Add("DoubleSided.Mirror");
                     }
-                    // Important: the following is used in SharedCode.template.hlsl for determining the normal flip mode    
+                    // Important: the following is used in SharedCode.template.hlsl for determining the normal flip mode
                     activeFields.Add("FragInputs.isFrontFace");
                 }
             }
@@ -513,7 +515,7 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
                     ++count;
                 }
                 else if (pass.PixelShaderUsesSlot(HairMasterNode.AlphaClipThresholdSlotId))
-                { 
+                {
                     activeFields.Add("AlphaTest");
                     ++count;
                 }
@@ -579,9 +581,9 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
                 activeFields.Add("BentNormal");
             }
 
-            if (masterNode.IsSlotConnected(HairMasterNode.TangentSlotId) && pass.PixelShaderUsesSlot(HairMasterNode.TangentSlotId))
+            if (masterNode.IsSlotConnected(HairMasterNode.HairStrandDirectionSlotId) && pass.PixelShaderUsesSlot(HairMasterNode.HairStrandDirectionSlotId))
             {
-                activeFields.Add("Tangent");
+                activeFields.Add("HairStrandDirection");
             }
 
             if (masterNode.transmission.isOn)
@@ -593,7 +595,7 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
             {
                 activeFields.Add("Material.SubsurfaceScattering");
             }
-            
+
             switch (masterNode.specularOcclusionMode)
             {
                 case SpecularOcclusionMode.Off:
@@ -620,7 +622,16 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
                 if (connected || occlusionSlot.value != occlusionSlot.defaultValue)
                 {
                     activeFields.Add("AmbientOcclusion");
-                }   
+                }
+            }
+            
+            if (masterNode.IsSlotConnected(HairMasterNode.LightingSlotId) && pass.PixelShaderUsesSlot(HairMasterNode.LightingSlotId))
+            {
+                activeFields.Add("LightingGI");
+            }
+            if (masterNode.IsSlotConnected(HairMasterNode.BackLightingSlotId) && pass.PixelShaderUsesSlot(HairMasterNode.LightingSlotId))
+            {
+                activeFields.Add("BackLightingGI");
             }
 
             return activeFields;

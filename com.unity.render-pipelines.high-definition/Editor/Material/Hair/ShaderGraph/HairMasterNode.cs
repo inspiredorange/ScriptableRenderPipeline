@@ -33,8 +33,8 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
         public const string BentNormalSlotName = "BentNormal";
         public const int BentNormalSlotId = 4;
 
-        public const string TangentSlotName = "Tangent";
-        public const int TangentSlotId = 5;
+        public const string HairStrandDirectionSlotName = "HairStrandDirection";
+        public const int HairStrandDirectionSlotId = 5;
 
         public const string SubsurfaceMaskSlotName = "SubsurfaceMask";
         public const int SubsurfaceMaskSlotId = 6;
@@ -72,7 +72,7 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
 
         public const string SpecularAAThresholdSlotName = "SpecularAAThreshold";
         public const int SpecularAAThresholdSlotId = 17;
-        
+
         //Hair Specific
         public const string SpecularTintSlotName = "SpecularTint";
         public const int SpecularTintSlotId = 18;
@@ -92,6 +92,12 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
         public const string AlphaClipThresholdShadowSlotName = "AlphaClipThresholdShadow";
         public const int AlphaClipThresholdShadowSlotId = 23;
 
+        public const string BakedGISlotName = "BakedGI";
+        public const int LightingSlotId = 24;
+
+        public const string BakedBackGISlotName = "BakedBackGI";
+        public const int BackLightingSlotId = 25;
+
         public enum MaterialType
         {
             KajiyaKay
@@ -102,7 +108,7 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
         {
             Alpha,
             Premultiply,
-            Additive,   
+            Additive,
         }
 
         // Just for convenience of doing simple masks. We could run out of bits of course.
@@ -115,7 +121,7 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
             Normal = 1 << NormalSlotId,
             SpecularOcclusion = 1 << SpecularOcclusionSlotId,
             BentNormal = 1 << BentNormalSlotId,
-            Tangent = 1 << TangentSlotId,
+            HairStrandDirection = 1 << HairStrandDirectionSlotId,
             SubsurfaceMask = 1 << SubsurfaceMaskSlotId,
             Thickness = 1 << ThicknessSlotId,
             DiffusionProfile = 1 << DiffusionProfileSlotId,
@@ -131,12 +137,14 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
             SecondarySpecularTint = 1 << SecondarySpecularTintSlotId,
             SecondarySmoothness = 1 << SecondarySmoothnessSlotId,
             SecondarySpecularShift = 1 << SecondarySpecularShiftSlotId,
-            AlphaClipThresholdShadow = 1 << AlphaClipThresholdShadowSlotId
+            AlphaClipThresholdShadow = 1 << AlphaClipThresholdShadowSlotId,
+            BakedGI = 1 << LightingSlotId,
+            BakedBackGI = 1 << BackLightingSlotId
         }
 
-        const SlotMask KajiyaKaySlotMask = SlotMask.Position | SlotMask.Albedo | SlotMask.Normal | SlotMask.SpecularOcclusion | SlotMask.BentNormal | SlotMask.Tangent | SlotMask.SubsurfaceMask 
+        const SlotMask KajiyaKaySlotMask = SlotMask.Position | SlotMask.Albedo | SlotMask.Normal | SlotMask.SpecularOcclusion | SlotMask.BentNormal | SlotMask.HairStrandDirection | SlotMask.SubsurfaceMask 
                                             | SlotMask.Thickness | SlotMask.DiffusionProfile | SlotMask.Smoothness | SlotMask.Occlusion | SlotMask.Alpha | SlotMask.AlphaClipThreshold | SlotMask.AlphaClipThresholdDepthPrepass 
-                                                | SlotMask.AlphaClipThresholdDepthPostpass | SlotMask.SpecularTint | SlotMask.SpecularShift | SlotMask.SecondarySpecularTint | SlotMask.SecondarySmoothness | SlotMask.SecondarySpecularShift | SlotMask.AlphaClipThresholdShadow;
+                                                | SlotMask.AlphaClipThresholdDepthPostpass | SlotMask.SpecularTint | SlotMask.SpecularShift | SlotMask.SecondarySpecularTint | SlotMask.SecondarySmoothness | SlotMask.SecondarySpecularShift | SlotMask.AlphaClipThresholdShadow | SlotMask.BakedGI;
 
         // This could also be a simple array. For now, catch any mismatched data.
         SlotMask GetActiveSlotMask()
@@ -486,6 +494,21 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
             }
         }
 
+        [SerializeField]
+        bool m_overrideBakedGI;
+
+        public ToggleData overrideBakedGI
+        {
+            get { return new ToggleData(m_overrideBakedGI); }
+            set
+            {
+                if (m_overrideBakedGI == value.isOn)
+                    return;
+                m_overrideBakedGI = value.isOn;
+                UpdateNodeAfterDeserialization();
+                Dirty(ModificationScope.Topological);
+            }
+        }
 
         public HairMasterNode()
         {
@@ -554,10 +577,10 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
                 AddSlot(new Vector1MaterialSlot(ThicknessSlotId, ThicknessSlotName, ThicknessSlotName, SlotType.Input, 1.0f, ShaderStageCapability.Fragment));
                 validSlots.Add(ThicknessSlotId);
             }
-            if (MaterialTypeUsesSlotMask(SlotMask.Tangent))
+            if (MaterialTypeUsesSlotMask(SlotMask.HairStrandDirection))
             {
-                AddSlot(new TangentMaterialSlot(TangentSlotId, TangentSlotName, TangentSlotName, CoordinateSpace.Tangent, ShaderStageCapability.Fragment));
-                validSlots.Add(TangentSlotId);
+                AddSlot(new Vector3MaterialSlot(HairStrandDirectionSlotId, HairStrandDirectionSlotName, HairStrandDirectionSlotName, SlotType.Input, new Vector3(0, -1, 0), ShaderStageCapability.Fragment));
+                validSlots.Add(HairStrandDirectionSlotId);
             }
             if (MaterialTypeUsesSlotMask(SlotMask.Emission))
             {
@@ -584,7 +607,7 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
                 AddSlot(new Vector1MaterialSlot(AlphaClipThresholdDepthPostpassSlotId, AlphaClipThresholdDepthPostpassSlotName, AlphaClipThresholdDepthPostpassSlotName, SlotType.Input, 0.5f, ShaderStageCapability.Fragment));
                 validSlots.Add(AlphaClipThresholdDepthPostpassSlotId);
             }
-            if (MaterialTypeUsesSlotMask(SlotMask.AlphaClipThresholdShadow) && surfaceType == SurfaceType.Transparent && alphaTest.isOn && alphaTestShadow.isOn)
+            if (MaterialTypeUsesSlotMask(SlotMask.AlphaClipThresholdShadow) && alphaTest.isOn && alphaTestShadow.isOn)
             {
                 AddSlot(new Vector1MaterialSlot(AlphaClipThresholdShadowSlotId, AlphaClipThresholdShadowSlotName, AlphaClipThresholdShadowSlotName, SlotType.Input, 0.5f, ShaderStageCapability.Fragment));
                 validSlots.Add(AlphaClipThresholdShadowSlotId);
@@ -621,6 +644,13 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
             {
                 AddSlot(new Vector1MaterialSlot(SecondarySpecularShiftSlotId, SecondarySpecularShiftSlotName, SecondarySpecularShiftSlotName, SlotType.Input, 0.5f, ShaderStageCapability.Fragment));
                 validSlots.Add(SecondarySpecularShiftSlotId);
+            }
+            if (MaterialTypeUsesSlotMask(SlotMask.BakedGI) && overrideBakedGI.isOn)
+            {
+                AddSlot(new DefaultMaterialSlot(LightingSlotId, BakedGISlotName, BakedGISlotName, ShaderStageCapability.Fragment));
+                validSlots.Add(LightingSlotId);
+                AddSlot(new DefaultMaterialSlot(BackLightingSlotId, BakedBackGISlotName, BakedBackGISlotName, ShaderStageCapability.Fragment));
+                validSlots.Add(BackLightingSlotId);
             }
 
             RemoveSlotsNameNotMatching(validSlots, true);
