@@ -107,7 +107,7 @@ void MAIN(uint2 dispatchThreadId : SV_DispatchThreadID)
     #endif
 
     float2 velocity;
-    DecodeVelocity(LOAD_TEXTURE2D(_CameraMotionVectorsTexture, closest), velocity);
+    DecodeVelocity(LOAD_TEXTURE2DX(_CameraMotionVectorsTexture, closest), velocity);
     float velocityLength = length(velocity);
 
     float2 uv = posInputs.positionNDC - jitter;

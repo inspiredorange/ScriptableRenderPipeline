@@ -6,18 +6,20 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
 
     public class MipGenerator
     {
-        RTHandle m_TempColorTarget;
-
         ComputeShader m_DepthPyramidCS;
         ComputeShader m_ColorPyramidCS;
         Shader m_ColorPyramidPS;
         Material m_ColorPyramidPSMat;
         MaterialPropertyBlock m_PropertyBlock;
 
+        enum KernelType { Tex2D = 0, Tex2DArray = 1 };
+        const int k_KernelTypeCount = 2;
+        RTHandle[] m_TempColorTargets = new RTHandle[k_KernelTypeCount];
+
         int m_DepthDownsampleKernel;
-        int m_ColorDownsampleKernel;
-        int m_ColorDownsampleKernelCopyMip0;
-        int m_ColorGaussianKernel;
+        int[] m_ColorDownsampleKernel;
+        int[] m_ColorDownsampleKernelCopyMip0;
+        int[] m_ColorGaussianKernel;
 
         int[] m_SrcOffset;
         int[] m_DstOffset;
@@ -28,9 +30,10 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
             m_ColorPyramidCS = asset.renderPipelineResources.shaders.colorPyramidCS;
 
             m_DepthDownsampleKernel = m_DepthPyramidCS.FindKernel("KDepthDownsample8DualUav");
-            m_ColorDownsampleKernel = m_ColorPyramidCS.FindKernel("KColorDownsample");
-            m_ColorDownsampleKernelCopyMip0 = m_ColorPyramidCS.FindKernel("KColorDownsampleCopyMip0");
-            m_ColorGaussianKernel = m_ColorPyramidCS.FindKernel("KColorGaussian");
+            m_ColorDownsampleKernel = InitColorKernel("KColorDownsample");
+            m_ColorDownsampleKernelCopyMip0 = InitColorKernel("KColorDownsampleCopyMip0");
+            m_ColorGaussianKernel = InitColorKernel("KColorGaussian");
+
             m_SrcOffset = new int[4];
             m_DstOffset = new int[4];
             m_ColorPyramidPS = asset.renderPipelineResources.shaders.colorPyramidPS;
@@ -40,8 +43,20 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
 
         public void Release()
         {
-            RTHandles.Release(m_TempColorTarget);
-            m_TempColorTarget = null;
+            for (int i = 0; i < k_KernelTypeCount; ++i)
+            {
+                RTHandles.Release(m_TempColorTargets[i]);
+                m_TempColorTargets[i] = null;
+            }
+        }
+
+        int[] InitColorKernel(string name)
+        {
+            int[] colorKernels = new int[k_KernelTypeCount];
+            colorKernels[(int)KernelType.Tex2D] = m_ColorPyramidCS.FindKernel(name);
+            colorKernels[(int)KernelType.Tex2DArray] = m_ColorPyramidCS.FindKernel(name + "_Tex2DArray");
+
+            return colorKernels;
         }
 
         // Generates an in-place depth pyramid
@@ -78,7 +93,7 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
                 cmd.SetComputeIntParams(   cs,         HDShaderIDs._DstOffset,         m_DstOffset);
                 cmd.SetComputeTextureParam(cs, kernel, HDShaderIDs._DepthMipChain,     texture);
 
-                cmd.DispatchCompute(cs, kernel, HDUtils.DivRoundUp(dstSize.x, 8), HDUtils.DivRoundUp(dstSize.y, 8), 1);
+                cmd.DispatchCompute(cs, kernel, HDUtils.DivRoundUp(dstSize.x, 8), HDUtils.DivRoundUp(dstSize.y, 8), texture.volumeDepth);
             }
         }
 
@@ -88,10 +103,19 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
         // Returns the number of mips
         public int RenderColorGaussianPyramid(CommandBuffer cmd, Vector2Int size, Texture source, RenderTexture destination)
         {
-            // Only create the temporary target on-demand in case the game doesn't actually need it
-            if (m_TempColorTarget == null)
+            // Select between Tex2D and Tex2DArray versions of the kernels
+            int kernelIndex = (int)KernelType.Tex2D;
+            if (source.dimension == TextureDimension.Tex2DArray)
             {
-                m_TempColorTarget = RTHandles.Alloc(
+                Debug.Assert(source.dimension == destination.dimension);
+                Debug.Assert(ShaderConfig.s_UseArrayForTexture2DX != 0);
+                kernelIndex = (int)KernelType.Tex2DArray;
+            }
+
+            // Only create the temporary target on-demand in case the game doesn't actually need it
+            if (m_TempColorTargets[kernelIndex] == null)
+            {
+                m_TempColorTargets[kernelIndex] = RTHandles.Alloc(
                     Vector2.one * 0.5f,
                     filterMode: FilterMode.Bilinear,
                     colorFormat: GraphicsFormat.R16G16B16A16_SFloat,
@@ -104,7 +128,7 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
             }
 
             #if UNITY_SWITCH
-            bool preferFragment = true;
+            bool preferFragment = true; // XRTODO: fix ps path
             #else
             bool preferFragment = false;
             #endif
@@ -112,6 +136,7 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
             int srcMipLevel  = 0;
             int srcMipWidth  = size.x;
             int srcMipHeight = size.y;
+            int slices = destination.volumeDepth;
 
             if (preferFragment)
             {
@@ -123,7 +148,7 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
                 m_PropertyBlock.SetVector(HDShaderIDs._BlitScaleBias, new Vector4(1f, 1f, 0f,0f));
                 m_PropertyBlock.SetFloat(HDShaderIDs._BlitMipLevel, 0f);
                 cmd.SetRenderTarget(destination, 0);
-                cmd.DrawProcedural(Matrix4x4.identity, HDUtils.GetBlitMaterial(), 0, MeshTopology.Triangles, 3, 1, m_PropertyBlock);
+                cmd.DrawProcedural(Matrix4x4.identity, HDUtils.GetBlitMaterial(cmd, source.dimension), 0, MeshTopology.Triangles, 3, 1, m_PropertyBlock);
 
                 // Note: smaller mips are excluded as we don't need them and the gaussian compute works
                 // on 8x8 blocks
@@ -139,19 +164,19 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
                     m_PropertyBlock.SetVector(HDShaderIDs._BlitScaleBias, new Vector4(1f, 1f, 0f,0f));
                     m_PropertyBlock.SetFloat(HDShaderIDs._BlitMipLevel, srcMipLevel);
                     cmd.SetRenderTarget(destination, srcMipLevel + 1);
-                    cmd.DrawProcedural(Matrix4x4.identity, HDUtils.GetBlitMaterial(), 1, MeshTopology.Triangles, 3, 1, m_PropertyBlock);
+                    cmd.DrawProcedural(Matrix4x4.identity, HDUtils.GetBlitMaterial(cmd, source.dimension), 1, MeshTopology.Triangles, 3, 1, m_PropertyBlock);
 
                     // Blur horizontal.
                     m_PropertyBlock.SetTexture(HDShaderIDs._Source, destination);
                     m_PropertyBlock.SetVector(HDShaderIDs._SrcScaleBias, new Vector4(1f, 1f, 0f, 0f));
                     m_PropertyBlock.SetVector(HDShaderIDs._SrcUvLimits, new Vector4(1f, 1f, 1f / dstMipWidth, 0f));
                     m_PropertyBlock.SetFloat(HDShaderIDs._SourceMip, srcMipLevel + 1);
-                    cmd.SetRenderTarget(m_TempColorTarget, 0);
+                    cmd.SetRenderTarget(m_TempColorTargets[kernelIndex], 0);
                     cmd.SetViewport(new Rect(0, 0, dstMipWidth, dstMipHeight));
                     cmd.DrawProcedural(Matrix4x4.identity, m_ColorPyramidPSMat, 0, MeshTopology.Triangles, 3, 1, m_PropertyBlock);
 
                     // Blur vertical.
-                    m_PropertyBlock.SetTexture(HDShaderIDs._Source, m_TempColorTarget);
+                    m_PropertyBlock.SetTexture(HDShaderIDs._Source, m_TempColorTargets[kernelIndex]);
                     m_PropertyBlock.SetVector(HDShaderIDs._SrcScaleBias, new Vector4((float)dstMipWidth / tempTargetWidth, (float)dstMipHeight / tempTargetHeight, 0f, 0f));
                     m_PropertyBlock.SetVector(HDShaderIDs._SrcUvLimits, new Vector4((dstMipWidth - 0.5f) /  tempTargetWidth, (dstMipHeight - 0.5f) /  tempTargetHeight, 0f, 1f / tempTargetHeight));
                     m_PropertyBlock.SetFloat(HDShaderIDs._SourceMip, 0);
@@ -166,9 +191,9 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
             else
             {
                 var cs = m_ColorPyramidCS;
-                int downsampleKernel = m_ColorDownsampleKernel;
-                int downsampleKernelMip0 = m_ColorDownsampleKernelCopyMip0;
-                int gaussianKernel = m_ColorGaussianKernel;
+                int downsampleKernel = m_ColorDownsampleKernel[kernelIndex];
+                int downsampleKernelMip0 = m_ColorDownsampleKernelCopyMip0[kernelIndex];
+                int gaussianKernel = m_ColorGaussianKernel[kernelIndex];
 
                 while (srcMipWidth >= 8 || srcMipHeight >= 8)
                 {
@@ -182,20 +207,20 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
                     {
                         cmd.SetComputeTextureParam(cs, downsampleKernelMip0, HDShaderIDs._Source, source, 0);
                         cmd.SetComputeTextureParam(cs, downsampleKernelMip0, HDShaderIDs._Mip0, destination, 0);
-                        cmd.SetComputeTextureParam(cs, downsampleKernelMip0, HDShaderIDs._Destination, m_TempColorTarget);
-                        cmd.DispatchCompute(cs, downsampleKernelMip0, (dstMipWidth + 7) / 8, (dstMipHeight + 7) / 8, 1);
+                        cmd.SetComputeTextureParam(cs, downsampleKernelMip0, HDShaderIDs._Destination, m_TempColorTargets[kernelIndex]);
+                        cmd.DispatchCompute(cs, downsampleKernelMip0, (dstMipWidth + 7) / 8, (dstMipHeight + 7) / 8, slices);
                     }
                     else
                     {
                         cmd.SetComputeTextureParam(cs, downsampleKernel, HDShaderIDs._Source, destination, srcMipLevel);
-                        cmd.SetComputeTextureParam(cs, downsampleKernel, HDShaderIDs._Destination, m_TempColorTarget);
-                        cmd.DispatchCompute(cs, downsampleKernel, (dstMipWidth + 7) / 8, (dstMipHeight + 7) / 8, 1);
+                        cmd.SetComputeTextureParam(cs, downsampleKernel, HDShaderIDs._Destination, m_TempColorTargets[kernelIndex]);
+                        cmd.DispatchCompute(cs, downsampleKernel, (dstMipWidth + 7) / 8, (dstMipHeight + 7) / 8, slices);
                     }
 
                     cmd.SetComputeVectorParam(cs, HDShaderIDs._Size, new Vector4(dstMipWidth, dstMipHeight, 0f, 0f));
-                    cmd.SetComputeTextureParam(cs, gaussianKernel, HDShaderIDs._Source, m_TempColorTarget);
+                    cmd.SetComputeTextureParam(cs, gaussianKernel, HDShaderIDs._Source, m_TempColorTargets[kernelIndex]);
                     cmd.SetComputeTextureParam(cs, gaussianKernel, HDShaderIDs._Destination, destination, srcMipLevel + 1);
-                    cmd.DispatchCompute(cs, gaussianKernel, (dstMipWidth + 7) / 8, (dstMipHeight + 7) / 8, 1);
+                    cmd.DispatchCompute(cs, gaussianKernel, (dstMipWidth + 7) / 8, (dstMipHeight + 7) / 8, slices);
 
                     srcMipLevel++;
                     srcMipWidth  = srcMipWidth  >> 1;

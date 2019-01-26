@@ -15,7 +15,7 @@
 #pragma kernel KMain_Variant6 MAIN=KMain_Variant6 VARIANT=6
 #pragma kernel KMain_Variant7 MAIN=KMain_Variant7 VARIANT=7
 
-TEXTURE2D(_InputTexture);
+TEXTURE2DX(_InputTexture);
 TEXTURE2D(_BloomTexture);
 TEXTURE2D(_BloomDirtTexture);
 TEXTURE2D(_ChromaSpectralLut);
@@ -125,7 +125,7 @@ void MAIN(uint2 dispatchThreadId : SV_DispatchThreadID)
         for (int i = 0; i < samples; i++)
         {
             float t = (i + 0.5) / samples;
-            float3 s = SAMPLE_TEXTURE2D_LOD(_InputTexture, sampler_LinearClamp, DistortUV(pos) * _ScreenToTargetScale.xy, 0.0).xyz;
+            float3 s = SAMPLE_TEXTURE2DX_LOD(_InputTexture, sampler_LinearClamp, DistortUV(pos) * _ScreenToTargetScale.xy, 0.0).xyz;
             float3 filter = SAMPLE_TEXTURE2D_LOD(_ChromaSpectralLut, sampler_ChromaSpectralLut, float2(t, 0.0), 0).xyz;
 
             sum += s * filter;
@@ -137,7 +137,7 @@ void MAIN(uint2 dispatchThreadId : SV_DispatchThreadID)
     }
     else
     {
-        color = SAMPLE_TEXTURE2D_LOD(_InputTexture, sampler_LinearClamp, uvDistorted * _ScreenToTargetScale.xy, 0.0).xyz;
+        color = SAMPLE_TEXTURE2DX_LOD(_InputTexture, sampler_LinearClamp, uvDistorted * _ScreenToTargetScale.xy, 0.0).xyz;
     }
 
     // Bloom

@@ -56,7 +56,7 @@ void KMain(uint2 dispatchThreadId : SV_DispatchThreadID)
 
     // Sample the history buffer with the motion vector at the closest point
     float2 velocity;
-    DecodeVelocity(LOAD_TEXTURE2D(_CameraMotionVectorsTexture, max(int2(posInputs.positionSS) + int2(closest.xy), 0)), velocity);
+    DecodeVelocity(LOAD_TEXTURE2DX(_CameraMotionVectorsTexture, max(int2(posInputs.positionSS) + int2(closest.xy), 0)), velocity);
     float cocHis = SAMPLE_TEXTURE2D_LOD(_InputHistoryCoCTexture, sampler_LinearClamp, (uv - velocity) * ScreenToTargetScaleHistory.xy, 0.0).x;
 
     // Neighborhood clamping
