@@ -107,7 +107,7 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
             int kernelIndex = (int)KernelType.Tex2D;
             if (source.dimension == TextureDimension.Tex2DArray)
             {
-                Debug.Assert(source.dimension == destination.dimension);
+                Debug.Assert(source.dimension == destination.dimension, "MipGenerator source texture does not match dimension of destination!");
                 Debug.Assert(ShaderConfig.s_UseArrayForTexture2DX != 0);
                 kernelIndex = (int)KernelType.Tex2DArray;
             }

@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine.Rendering;
 
-namespace UnityEngine.Experimental.Rendering
+namespace UnityEngine.Experimental.Rendering.HDPipeline
 {
     public partial class RTHandleSystem
     {

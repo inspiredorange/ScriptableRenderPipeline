@@ -28,7 +28,7 @@
 #pragma kernel KMainBlendout_MSAA       MAIN=KMainBlendout_MSAA         MSAA BLEND_WITH_HIGHER_RESOLUTION
 
 #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/Common.hlsl"
-#include "Packages/com.unity.render-pipelines.high-definition/Runtime/ShaderLibrary/ShaderVariables.hlsl"
+#include "Packages/com.unity.render-pipelines.high-definition/Runtime/ShaderLibrary/Texture2DX.hlsl"
 
 TEXTURE2DX(_LoResDB);
 TEXTURE2DX(_HiResDB);
