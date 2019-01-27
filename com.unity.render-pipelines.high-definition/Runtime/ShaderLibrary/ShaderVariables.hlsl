@@ -3,26 +3,12 @@
 #ifndef UNITY_SHADER_VARIABLES_INCLUDED
 #define UNITY_SHADER_VARIABLES_INCLUDED
 
-#include "Packages/com.unity.render-pipelines.high-definition/Runtime/ShaderLibrary/ShaderConfig.cs.hlsl"
+#include "Packages/com.unity.render-pipelines.high-definition/Runtime/ShaderLibrary/Texture2DX.hlsl"
 
 // CAUTION:
 // Currently the shaders compiler always include regualr Unity shaderVariables, so I get a conflict here were UNITY_SHADER_VARIABLES_INCLUDED is already define, this need to be fixed.
 // As I haven't change the variables name yet, I simply don't define anything, and I put the transform function at the end of the file outside the guard header.
 // This need to be fixed.
-
-// Early defines for single-pass stereo instancing
-// XRTODO: refactor to use proper definition from UnityInstancing.hlsl and support more APIs
-#if defined(STEREO_INSTANCING_ON) && defined(SHADER_API_D3D11)
-    #define UNITY_STEREO_INSTANCING_ENABLED
-#endif
-
-#if defined(UNITY_STEREO_INSTANCING_ENABLED) && (SHADEROPTIONS_USE_ARRAY_FOR_TEXTURE2DX == 0)
-    #error Single-pass stereo instancing requires shader option UseArrayForTexture2DX
-#endif
-
-#if defined(UNITY_SINGLE_PASS_STEREO) || defined(UNITY_STEREO_INSTANCING_ENABLED)
-    #define USING_STEREO_MATRICES
-#endif
 
 #if defined(USING_STEREO_MATRICES)
     #define glstate_matrix_projection unity_StereoMatrixP[unity_StereoEyeIndex]
@@ -37,39 +23,6 @@
     #define _WorldSpaceCameraPos _WorldSpaceCameraPosStereo[unity_StereoEyeIndex].xyz
     #define _WorldSpaceCameraPosEyeOffset _WorldSpaceCameraPosStereoEyeOffset[unity_StereoEyeIndex].xyz
     #define _PrevCamPosRWS _PrevCamPosRWSStereo[unity_StereoEyeIndex].xyz
-#endif
-
-// Helper macros to handle XR instancing with Texture2DArray
-// Render textures allocated with the flag 'xrInstancing' used Texture2DArray where each slice is associated to an eye.
-// unity_StereoEyeIndex is used to select the eye in the current context.
-#if (SHADEROPTIONS_USE_ARRAY_FOR_TEXTURE2DX != 0) && !defined(FORCE_NO_TEXTURE2DX_ARRAY)
-    #define USE_TEXTURE2DX_AS_ARRAY
-#endif
-
-#if defined(USE_TEXTURE2DX_AS_ARRAY)
-    #define TEXTURE2DX(textureName)                                         TEXTURE2D_ARRAY(textureName)
-    #define TEXTURE2DX_FLOAT(textureName)                                   TEXTURE2D_ARRAY_FLOAT(textureName)
-    #define RW_TEXTURE2DX(type, textureName)                                RW_TEXTURE2D_ARRAY(type, textureName)
-    #define COORD_TEXTURE2DX(pixelCoord)                                    uint3(pixelCoord, unity_StereoEyeIndex)
-    #define LOAD_TEXTURE2DX(textureName, unCoord2)                          LOAD_TEXTURE2D_ARRAY(textureName, unCoord2, unity_StereoEyeIndex)
-    #define LOAD_TEXTURE2DX_MSAA(textureName, unCoord2, sampleIndex)        LOAD_TEXTURE2D_ARRAY_MSAA(textureName, unCoord2, unity_StereoEyeIndex, sampleIndex)
-    #define LOAD_TEXTURE2DX_LOD(textureName, unCoord2, lod)                 LOAD_TEXTURE2D_ARRAY_LOD(textureName, unCoord2, unity_StereoEyeIndex, lod)
-    #define SAMPLE_TEXTURE2DX_LOD(textureName, samplerName, coord2, lod)    SAMPLE_TEXTURE2D_ARRAY_LOD(textureName, samplerName, coord2, unity_StereoEyeIndex, lod)
-    #define GATHER_TEXTURE2DX(textureName, samplerName, coord2)             GATHER_TEXTURE2D_ARRAY(textureName, samplerName, coord2, unity_StereoEyeIndex)
-    #define GATHER_RED_TEXTURE2DX(textureName, samplerName, coord2)         GATHER_RED_TEXTURE2D(textureName, samplerName, float3(coord2, unity_StereoEyeIndex))
-    #define GATHER_GREEN_TEXTURE2DX(textureName, samplerName, coord2)       GATHER_GREEN_TEXTURE2D(textureName, samplerName, float3(coord2, unity_StereoEyeIndex))
-#else
-    #define TEXTURE2DX(textureName)                                         TEXTURE2D(textureName)
-    #define TEXTURE2DX_FLOAT(textureName)                                   TEXTURE2D_FLOAT(textureName)
-    #define RW_TEXTURE2DX(type, textureName)                                RW_TEXTURE2D(type, textureName) 
-    #define COORD_TEXTURE2DX(pixelCoord)                                    pixelCoord
-    #define LOAD_TEXTURE2DX                                                 LOAD_TEXTURE2D
-    #define LOAD_TEXTURE2DX_MSAA                                            LOAD_TEXTURE2D_MSAA
-    #define LOAD_TEXTURE2DX_LOD                                             LOAD_TEXTURE2D_LOD
-    #define SAMPLE_TEXTURE2DX_LOD                                           SAMPLE_TEXTURE2D_LOD
-    #define GATHER_TEXTURE2DX                                               GATHER_TEXTURE2D
-    #define GATHER_RED_TEXTURE2DX                                           GATHER_RED_TEXTURE2D
-    #define GATHER_GREEN_TEXTURE2DX                                         GATHER_GREEN_TEXTURE2D
 #endif
 
 #define UNITY_LIGHTMODEL_AMBIENT (glstate_lightmodel_ambient * 2)
@@ -159,29 +112,6 @@ CBUFFER_START(UnityStereoGlobals)
 CBUFFER_END
 #endif
 
-#if defined(USING_STEREO_MATRICES) && defined(UNITY_STEREO_MULTIVIEW_ENABLED)
-CBUFFER_START(UnityStereoEyeIndices)
-    float4 unity_StereoEyeIndices[2];
-CBUFFER_END
-#endif
-
-#if defined(UNITY_STEREO_MULTIVIEW_ENABLED) && defined(SHADER_STAGE_VERTEX)
-    #define unity_StereoEyeIndex UNITY_VIEWID
-    UNITY_DECLARE_MULTIVIEW(2);
-#elif defined(UNITY_STEREO_INSTANCING_ENABLED) || defined(UNITY_STEREO_MULTIVIEW_ENABLED)
-    static uint unity_StereoEyeIndex;
-#elif defined(UNITY_SINGLE_PASS_STEREO)
-#if SHADER_STAGE_COMPUTE
-    // Currently the Unity engine doesn't automatically update stereo indices, offsets, and matrices for compute shaders.
-    // Instead, we manually update _ComputeEyeIndex in SRP code. 
-    #define unity_StereoEyeIndex _ComputeEyeIndex
-#else
-    CBUFFER_START(UnityStereoEyeIndex)
-        int unity_StereoEyeIndex;
-    CBUFFER_END
-#endif
-#endif
-
 CBUFFER_START(UnityPerDrawRare)
     float4x4 glstate_matrix_transpose_modelview0;
 CBUFFER_END
@@ -246,7 +176,6 @@ CBUFFER_START(UnityGlobal)
         float4x4 unity_MatrixInvV;
         float4x4 unity_MatrixVP;
         float4 unity_StereoScaleOffset;
-        int unity_StereoEyeIndex;
     #endif
 
     // ================================

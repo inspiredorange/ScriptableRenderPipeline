@@ -7,16 +7,16 @@ Shader "Hidden/HDRP/OpaqueAtmosphericScattering"
         #pragma multi_compile _ DEBUG_DISPLAY
 
         // #pragma enable_d3d11_debug_symbols
-
-        float4x4 _PixelCoordToViewDirWS; // Actually just 3x3, but Unity can only set 4x4
-
-        Texture2DMS<float> _DepthTextureMS;
         
         #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/Common.hlsl"
         #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/Color.hlsl"
         #include "Packages/com.unity.render-pipelines.high-definition/Runtime/ShaderLibrary/ShaderVariables.hlsl"
         #include "Packages/com.unity.render-pipelines.high-definition/Runtime/Lighting/AtmosphericScattering/AtmosphericScattering.hlsl"
         #include "Packages/com.unity.render-pipelines.high-definition/Runtime/Sky/SkyUtils.hlsl"
+
+        float4x4 _PixelCoordToViewDirWS; // Actually just 3x3, but Unity can only set 4x4
+
+        TEXTURE2DX_MSAA(float, _DepthTextureMS);
 
         struct Attributes
         {

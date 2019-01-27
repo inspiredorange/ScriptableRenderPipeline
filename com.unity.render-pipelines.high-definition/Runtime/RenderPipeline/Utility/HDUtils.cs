@@ -57,7 +57,7 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
 
         private static Texture2DArray CreateTexture2DArrayFromTexture2D(int slices, Texture2D source, string name)
         {
-            Texture2DArray texArray = new Texture2DArray(1, 1, slices, TextureFormat.ARGB32, false) { name = name };
+            Texture2DArray texArray = new Texture2DArray(source.width, source.height, slices, source.format, false) { name = name };
             for (int i = 0; i < slices; ++i)
                 Graphics.CopyTexture(source, 0, 0, texArray, i, 0);
 
