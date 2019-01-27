@@ -75,11 +75,11 @@ float3 ClipToAABB(float3 color, float3 minimum, float3 maximum)
 
 float2 GetClosestFragment(PositionInputs posInputs)
 {
-    float center  = SampleCameraDepthSS(posInputs.positionSS);
-    float nw = SampleCameraDepthSS(posInputs.positionSS + int2(-1, -1));
-    float ne = SampleCameraDepthSS(posInputs.positionSS + int2( 1, -1));
-    float sw = SampleCameraDepthSS(posInputs.positionSS + int2(-1,  1));
-    float se = SampleCameraDepthSS(posInputs.positionSS + int2( 1,  1));
+    float center  = LoadCameraDepth(posInputs.positionSS);
+    float nw = LoadCameraDepth(posInputs.positionSS + int2(-1, -1));
+    float ne = LoadCameraDepth(posInputs.positionSS + int2( 1, -1));
+    float sw = LoadCameraDepth(posInputs.positionSS + int2(-1,  1));
+    float se = LoadCameraDepth(posInputs.positionSS + int2( 1,  1));
 
     float4 neighborhood = float4(nw, ne, sw, se);
 
