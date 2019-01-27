@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine.Assertions;
 using UnityEngine.Rendering;
 
-namespace UnityEngine.Experimental.Rendering
+namespace UnityEngine.Experimental.Rendering.HDPipeline
 {
     public delegate Vector2Int ScaleFunc(Vector2Int size);
 
@@ -57,6 +57,25 @@ namespace UnityEngine.Experimental.Rendering
                 Assert.AreEqual(this, rth.m_Owner);
                 rth.Release();
             }
+        }
+
+        private VRTextureUsage OverrideRenderTexture2DX(bool xrInstancing, ref TextureDimension dimension, ref int slices)
+        {
+            if (xrInstancing && ShaderConfig.s_UseArrayForTexture2DX != 0)
+            {
+                // TEXTURE2DX macros will now expand to TEXTURE2D_ARRAY
+                dimension = TextureDimension.Tex2DArray;
+
+                if (XRGraphics.stereoRenderingMode == XRGraphics.StereoRenderingMode.SinglePassInstanced)
+                {
+                    slices = XRGraphics.eyeCount;
+
+                    // XRTODO: add validation, asserts
+                    return XRGraphics.eyeTextureDesc.vrUsage;
+                }
+            }
+
+            return VRTextureUsage.None;
         }
 
         public void SetReferenceSize(int width, int height, MSAASamples msaaSamples)
@@ -267,7 +286,7 @@ namespace UnityEngine.Experimental.Rendering
             }
 
             // XR override for instancing support
-            VRTextureUsage vrUsage = XRGraphics.OverrideRenderTexture(xrInstancing, ref dimension, ref slices);
+            VRTextureUsage vrUsage = OverrideRenderTexture2DX(xrInstancing, ref dimension, ref slices);
 
             // We need to handle this in an explicit way since GraphicsFormat does not expose depth formats. TODO: Get rid of this branch once GraphicsFormat'll expose depth related formats
             RenderTexture rt;
@@ -509,7 +528,7 @@ namespace UnityEngine.Experimental.Rendering
             RTCategory category = allocForMSAA ? RTCategory.MSAA : RTCategory.Regular;
 
             // XR override for instancing support
-            VRTextureUsage vrUsage = XRGraphics.OverrideRenderTexture(xrInstancing, ref dimension, ref slices);
+            VRTextureUsage vrUsage = OverrideRenderTexture2DX(xrInstancing, ref dimension, ref slices);
 
             // We need to handle this in an explicit way since GraphicsFormat does not expose depth formats. TODO: Get rid of this branch once GraphicsFormat'll expose depth related formats
             RenderTexture rt;
