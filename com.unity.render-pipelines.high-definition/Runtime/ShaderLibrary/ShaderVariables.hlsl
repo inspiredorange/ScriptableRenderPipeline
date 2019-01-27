@@ -387,14 +387,14 @@ CBUFFER_END
 
 // Note: To sample camera depth in HDRP we provide these utils functions because the way we store the depth mips can change
 // Currently it's an atlas and it's layout can be found at ComputePackedMipChainInfo in HDUtils.cs
-float SampleCameraDepthSS(uint2 pixelCoords)
+float LoadCameraDepth(uint2 pixelCoords)
 {
     return LOAD_TEXTURE2DX_LOD(_CameraDepthTexture, pixelCoords, 0).r;
 }
 
-float SampleCameraDepthUV(float2 uv)
+float SampleCameraDepth(float2 uv)
 {
-    return SampleCameraDepthSS(uint2(uv * _ScreenSize.xy));
+    return LoadCameraDepth(uint2(uv * _ScreenSize.xy));
 }
 
 float3 SampleCameraColor(uint2 pixelCoords)
