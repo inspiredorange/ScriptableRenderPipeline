@@ -116,7 +116,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Micro-shadowing in Lit forward now use ambientOcclusion instead of SpecularOcclusion
 - Upgraded FrameSettings workflow, DebugMenu and Inspector part relative to it
 - Update build light list shader code to support 32 threads in wavefronts on Switch
-- Rename SampleCameraDepth to SampleCameraDepthSS and SampleCameraDepthUV
+- Rename SampleCameraDepth() functions to LoadCameraDepth() and SampleCameraDepth()
 - LayeredLit layers' foldout are now grouped in one main foldout per layer
 - Shadow alpha clip can now be enabled on lit shader and haor shader enven for opaque
 
