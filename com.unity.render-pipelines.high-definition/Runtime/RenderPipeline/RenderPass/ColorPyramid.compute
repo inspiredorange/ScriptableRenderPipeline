@@ -129,8 +129,10 @@ void BlurVertically(uint2 pixelCoord, uint topMostIndex)
 }
 
 [numthreads(KERNEL_SIZE, KERNEL_SIZE, 1)]
-void MAIN_GAUSSIAN(uint2 groupId : SV_GroupID, uint2 groupThreadId : SV_GroupThreadID, uint2 dispatchThreadId : SV_DispatchThreadID)
+void MAIN_GAUSSIAN(uint2 groupId : SV_GroupID, uint2 groupThreadId : SV_GroupThreadID, uint3 dispatchThreadId : SV_DispatchThreadID)
 {
+    UNITY_STEREO_ASSIGN_COMPUTE_EYE_INDEX(dispatchThreadId.z);
+
     // Upper-left pixel coordinate of quad that this thread will read
     int2 threadUL = (groupThreadId << 1) + (groupId << 3) - 4;
     uint2 uthreadUL = uint2(max(0, threadUL));
@@ -155,13 +157,15 @@ void MAIN_GAUSSIAN(uint2 groupId : SV_GroupID, uint2 groupThreadId : SV_GroupThr
     GroupMemoryBarrierWithGroupSync();
 
     // Vertically blur the pixels in LDS and write the result to memory
-    BlurVertically(dispatchThreadId, (groupThreadId.y << 3u) + groupThreadId.x);
+    BlurVertically(dispatchThreadId.xy, (groupThreadId.y << 3u) + groupThreadId.x);
 }
 
 [numthreads(KERNEL_SIZE, KERNEL_SIZE, 1)]
-void MAIN_DOWNSAMPLE(uint2 dispatchThreadId : SV_DispatchThreadID)
+void MAIN_DOWNSAMPLE(uint3 dispatchThreadId : SV_DispatchThreadID)
 {
-    uint2 offset = dispatchThreadId * 2u;
+    UNITY_STEREO_ASSIGN_COMPUTE_EYE_INDEX(dispatchThreadId.z);
+
+    uint2 offset = dispatchThreadId.xy * 2u;
     uint2 size = uint2(_Size.xy) - 1u;
 
     uint2 c00 = min(offset + uint2(0u, 0u), size);
@@ -180,5 +184,13 @@ void MAIN_DOWNSAMPLE(uint2 dispatchThreadId : SV_DispatchThreadID)
     _Mip0[COORD_TEXTURE2DX(c01)] = p01;
     #endif
 
+<<<<<<< Updated upstream
     _Destination[COORD_TEXTURE2DX(dispatchThreadId)] = (p00 + p01 + p11 + p10) * 0.25;
+=======
+<<<<<<< Updated upstream
+    _Destination[dispatchThreadId] = (p00 + p01 + p11 + p10) * 0.25;
+=======
+    _Destination[COORD_TEXTURE2DX(dispatchThreadId.xy)] = (p00 + p01 + p11 + p10) * 0.25;
+>>>>>>> Stashed changes
+>>>>>>> Stashed changes
 }
