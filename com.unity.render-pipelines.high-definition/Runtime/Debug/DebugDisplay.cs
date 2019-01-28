@@ -20,6 +20,8 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
         PreRefractionColorPyramid,
         DepthPyramid,
         FinalColorPyramid,
+        
+        // Raytracing
         LightCluster,
         RaytracedAreaShadow,
         MaxLightingFullScreenDebug,
@@ -30,7 +32,7 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
         NanTracker,
         MaxRenderingFullScreenDebug,
 
-        //Materail
+        //Material
         MinMaterialFullScreenDebug,
         ValidateDiffuseColor,
         ValidateSpecularColor,
