@@ -69,7 +69,7 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
             cmd.SetGlobalVector(HDShaderIDs._AmbientOcclusionParam, Vector4.zero);
         }
 
-        public void RenderAO(HDCamera hdCamera, CommandBuffer cmd, RTHandleSystem.RTHandle outputTexture, ScriptableRenderContext renderContext, RTHandleSystem.RTHandle rayCountTex)
+        public void RenderAO(HDCamera hdCamera, CommandBuffer cmd, RTHandleSystem.RTHandle outputTexture, ScriptableRenderContext renderContext)
         {
             // Let's check all the resources
             HDRaytracingEnvironment rtEnvironement = m_RaytracingManager.CurrentEnvironment();
@@ -114,7 +114,7 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
                 cmd.SetRaytracingTextureParam(aoShader, m_RayGenShaderName, HDShaderIDs._NormalBufferTexture, m_SharedRTManager.GetNormalBuffer());
 
                 // Todo IF DEBUG
-                cmd.SetRaytracingTextureParam(aoShader, m_RayGenShaderName, HDShaderIDs._RayCountTexture, rayCountTex);
+                cmd.SetRaytracingTextureParam(aoShader, m_RayGenShaderName, HDShaderIDs._RayCountTexture, m_RaytracingManager.rayCountManager.rayCountTex);
                 // endif
 
                 // Run the calculus

@@ -1329,6 +1329,7 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
             var target = renderRequest.target;
 
             cmd.SetGlobalInt(HDShaderIDs._RaytracedAreaShadow, 0);
+
 #if ENABLE_RAYTRACING
             m_RayTracingManager.rayCountManager.ClearRayCount(cmd, hdCamera);
 #endif
@@ -1557,7 +1558,7 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
                 {
 #if ENABLE_RAYTRACING
                     // Let's render the screen space area light shadows
-                    bool areaShadowsRendered = m_RaytracingShadows.RenderAreaShadows(hdCamera, cmd, renderContext, m_RayTracingManager.rayCountManager.rayCountTex);
+                    bool areaShadowsRendered = m_RaytracingShadows.RenderAreaShadows(hdCamera, cmd, renderContext);
                     PushFullScreenDebugTexture(hdCamera, cmd, m_RaytracingShadows.GetShadowedIntegrationTexture(), FullScreenDebugMode.RaytracedAreaShadow);
                     if (areaShadowsRendered)
                     {
@@ -2685,7 +2686,7 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
 
             if (m_Asset.renderPipelineSettings.supportRayTracing && rtEnvironement != null && rtEnvironement.raytracedReflections)
             {
-                m_RaytracingReflections.RenderReflections(hdCamera, cmd, m_SsrLightingTexture, renderContext, m_RayTracingManager.rayCountManager.rayCountTex);
+                m_RaytracingReflections.RenderReflections(hdCamera, cmd, m_SsrLightingTexture, renderContext);
 
                 PushFullScreenDebugTexture(hdCamera, cmd, m_RaytracingReflections.m_LightCluster.m_DebugLightClusterTexture, FullScreenDebugMode.LightCluster);
             }
@@ -2989,7 +2990,7 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
 
 #if ENABLE_RAYTRACING
                 if (m_CurrentDebugDisplaySettings.data.countRays)
-                    m_RayTracingManager.rayCountManager.RenderRayCount(cmd, hdCamera, m_CameraColorBuffer, m_CurrentDebugDisplaySettings.data.rayCountFontColor); ; 
+                    m_RayTracingManager.rayCountManager.RenderRayCount(cmd, hdCamera, m_CameraColorBuffer, m_CurrentDebugDisplaySettings.data.rayCountFontColor);
 #endif
 
                 m_LightLoop.RenderDebugOverlay(hdCamera, cmd, m_CurrentDebugDisplaySettings, ref x, ref y, overlaySize, hdCamera.actualWidth, cullResults);

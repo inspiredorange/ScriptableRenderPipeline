@@ -74,7 +74,7 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
             RTHandles.Release(m_IntermediateBuffer);
         }
 
-        public void RenderReflections(HDCamera hdCamera, CommandBuffer cmd, RTHandleSystem.RTHandle outputTexture, ScriptableRenderContext renderContext, RTHandleSystem.RTHandle rayCountTex)
+        public void RenderReflections(HDCamera hdCamera, CommandBuffer cmd, RTHandleSystem.RTHandle outputTexture, ScriptableRenderContext renderContext)
         {
             // First thing to check is: Do we have a valid ray-tracing environment?
             HDRaytracingEnvironment rtEnvironement = m_RaytracingManager.CurrentEnvironment();
@@ -118,7 +118,7 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
                 cmd.SetRaytracingTextureParam(reflectionShader, m_RayGenShaderName, HDShaderIDs._NormalBufferTexture, m_SharedRTManager.GetNormalBuffer());
 
                 // Set ray count tex - Todo IF DEBUG
-                cmd.SetRaytracingTextureParam(reflectionShader, m_RayGenShaderName, HDShaderIDs._RayCountTexture, rayCountTex);
+                cmd.SetRaytracingTextureParam(reflectionShader, m_RayGenShaderName, HDShaderIDs._RayCountTexture, m_RaytracingManager.rayCountManager.rayCountTex);
 
                 // Compute the pixel spread value
                 float pixelSpreadAngle = Mathf.Atan(2.0f * Mathf.Tan(hdCamera.camera.fieldOfView * Mathf.PI / 360.0f) / Mathf.Min(hdCamera.actualWidth, hdCamera.actualHeight));

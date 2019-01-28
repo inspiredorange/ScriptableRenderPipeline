@@ -84,9 +84,12 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
             public MSAASamples msaaSamples = MSAASamples.None;
 
             // Raytracing
+#if ENABLE_RAYTRACING
             public bool countRays = false;
             public Color rayCountFontColor = Color.white;
             public bool showRayCountTex = false;
+            public int countRayPassIndex;
+#endif
 
             public int debugCameraToFreeze = 0;
 
@@ -103,7 +106,6 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
             public int shadowDebugModeEnumIndex;
             public int tileClusterDebugByCategoryEnumIndex;
             public int lightVolumeDebugTypeEnumIndex;
-            public int countRayPassIndex;
             public int renderingFulscreenDebugModeEnumIndex;
             public int terrainTextureEnumIndex;
             public int colorPickerDebugModeEnumIndex;
@@ -315,17 +317,17 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
 
         void RegisterDisplayStatsDebug()
         {
-            var list = new List<DebugUI.Widget>();
-            list.Add(new DebugUI.Value { displayName = "Frame Rate (fps)", getter = () => 1f / Time.smoothDeltaTime, refreshRate = 1f / 30f });
-            list.Add(new DebugUI.Value { displayName = "Frame Time (ms)", getter = () => Time.smoothDeltaTime * 1000f, refreshRate = 1f / 30f });
-
-
+            m_DebugDisplayStatsItems = new DebugUI.Widget[]
+            {
+                new DebugUI.Value { displayName = "Frame Rate (fps)", getter = () => 1f / Time.smoothDeltaTime, refreshRate = 1f / 30f },
+                new DebugUI.Value { displayName = "Frame Time (ms)", getter = () => Time.smoothDeltaTime * 1000f, refreshRate = 1f / 30f }
 #if ENABLE_RAYTRACING
-            list.Add(new DebugUI.BoolField { displayName = "Display Ray Count", getter = () => data.countRays, setter = value => data.countRays = value, onValueChanged = RefreshDisplayStatsDebug });
-            list.Add(new DebugUI.ColorField { displayName = "Ray Count Font Color", getter = () => data.rayCountFontColor, setter = value => data.rayCountFontColor = value });
+                ,
+                new DebugUI.BoolField { displayName = "Display Ray Count", getter = () => data.countRays, setter = value => data.countRays = value, onValueChanged = RefreshDisplayStatsDebug },
+                new DebugUI.ColorField { displayName = "Ray Count Font Color", getter = () => data.rayCountFontColor, setter = value => data.rayCountFontColor = value }
 #endif
+            };
 
-            m_DebugDisplayStatsItems = list.ToArray();
             var panel = DebugManager.instance.GetPanel(k_PanelDisplayStats, true);
             panel.flags = DebugUI.Flags.RuntimeOnly;
             panel.children.Add(m_DebugDisplayStatsItems);

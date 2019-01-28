@@ -17,7 +17,7 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
         {
             get
             {
-                return m_RayCountManager; 
+                return m_RayCountManager;
             }
         }
 
