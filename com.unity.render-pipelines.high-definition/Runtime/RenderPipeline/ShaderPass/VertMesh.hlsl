@@ -8,12 +8,12 @@ struct VaryingsToPS
 
 struct PackedVaryingsToPS
 {
-    UNITY_VERTEX_OUTPUT_STEREO
-
 #ifdef VARYINGS_NEED_PASS
     PackedVaryingsPassToPS vpass;
 #endif
     PackedVaryingsMeshToPS vmesh;
+
+    UNITY_VERTEX_OUTPUT_STEREO
 };
 
 PackedVaryingsToPS PackVaryingsToPS(VaryingsToPS input)
@@ -41,12 +41,12 @@ struct VaryingsToDS
 
 struct PackedVaryingsToDS
 {
-    UNITY_VERTEX_OUTPUT_STEREO
-
     PackedVaryingsMeshToDS vmesh;
 #ifdef VARYINGS_NEED_PASS
     PackedVaryingsPassToDS vpass;
 #endif
+
+    UNITY_VERTEX_OUTPUT_STEREO
 };
 
 PackedVaryingsToDS PackVaryingsToDS(VaryingsToDS input)
@@ -105,6 +105,7 @@ VaryingsMeshType VertMesh(AttributesMesh input)
     VaryingsMeshType output;
 
     UNITY_SETUP_INSTANCE_ID(input);
+    UNITY_TRANSFER_INSTANCE_ID(input, output);
 
 #if defined(HAVE_MESH_MODIFICATION)
     input = ApplyMeshModification(input);
@@ -170,6 +171,7 @@ VaryingsMeshToPS VertMeshTesselation(VaryingsMeshToDS input)
     VaryingsMeshToPS output;
 
     UNITY_SETUP_INSTANCE_ID(input);
+    UNITY_TRANSFER_INSTANCE_ID(input, output);
 
     output.positionCS = TransformWorldToHClip(input.positionRWS);
 

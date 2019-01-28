@@ -51,6 +51,8 @@ struct VaryingsMeshToPS
 #ifdef VARYINGS_NEED_COLOR
     float4 color;
 #endif
+
+    UNITY_VERTEX_INPUT_INSTANCE_ID
 };
 
 struct PackedVaryingsMeshToPS
@@ -83,6 +85,8 @@ struct PackedVaryingsMeshToPS
     float4 interpolators5 : TEXCOORD5;
 #endif
 
+    UNITY_VERTEX_INPUT_INSTANCE_ID // Must be declare before FRONT_FACE_SEMANTIC
+
 #if defined(VARYINGS_NEED_CULLFACE) && SHADER_STAGE_FRAGMENT
     FRONT_FACE_TYPE cullFace : FRONT_FACE_SEMANTIC;
 #endif
@@ -92,6 +96,8 @@ struct PackedVaryingsMeshToPS
 PackedVaryingsMeshToPS PackVaryingsMeshToPS(VaryingsMeshToPS input)
 {
     PackedVaryingsMeshToPS output;
+
+    UNITY_TRANSFER_INSTANCE_ID(input, output);
 
     output.positionCS = input.positionCS;
 
@@ -128,6 +134,8 @@ FragInputs UnpackVaryingsMeshToFragInputs(PackedVaryingsMeshToPS input)
 {
     FragInputs output;
     ZERO_INITIALIZE(FragInputs, output);
+
+    UNITY_SETUP_INSTANCE_ID(input);
 
     // Init to some default value to make the computer quiet (else it output "divide by zero" warning even if value is not used).
     // TODO: this is a really poor workaround, but the variable is used in a bunch of places
@@ -217,6 +225,8 @@ struct VaryingsMeshToDS
 #ifdef VARYINGS_DS_NEED_COLOR
     float4 color;
 #endif
+
+    UNITY_VERTEX_INPUT_INSTANCE_ID
 };
 
 struct PackedVaryingsMeshToDS
@@ -244,12 +254,16 @@ struct PackedVaryingsMeshToDS
 #ifdef VARYINGS_DS_NEED_COLOR
     float4 interpolators5 : TEXCOORD2;
 #endif
+
+     UNITY_VERTEX_INPUT_INSTANCE_ID
 };
 
 // Functions to pack data to use as few interpolator as possible, the ShaderGraph should generate these functions
 PackedVaryingsMeshToDS PackVaryingsMeshToDS(VaryingsMeshToDS input)
 {
     PackedVaryingsMeshToDS output;
+
+    UNITY_TRANSFER_INSTANCE_ID(input, output);
 
     output.interpolators0 = input.positionRWS;
     output.interpolators1 = input.normalWS;
@@ -279,6 +293,8 @@ VaryingsMeshToDS UnpackVaryingsMeshToDS(PackedVaryingsMeshToDS input)
 {
     VaryingsMeshToDS output;
 
+    UNITY_TRANSFER_INSTANCE_ID(input, output);
+
     output.positionRWS = input.interpolators0;
     output.normalWS = input.interpolators1;
 #ifdef VARYINGS_DS_NEED_TANGENT
@@ -306,6 +322,8 @@ VaryingsMeshToDS UnpackVaryingsMeshToDS(PackedVaryingsMeshToDS input)
 VaryingsMeshToDS InterpolateWithBaryCoordsMeshToDS(VaryingsMeshToDS input0, VaryingsMeshToDS input1, VaryingsMeshToDS input2, float3 baryCoords)
 {
     VaryingsMeshToDS output;
+
+    UNITY_TRANSFER_INSTANCE_ID(input0, output);
 
     TESSELLATION_INTERPOLATE_BARY(positionRWS, baryCoords);
     TESSELLATION_INTERPOLATE_BARY(normalWS, baryCoords);
