@@ -41,15 +41,7 @@ void KERNEL_NAME(uint3 dispatchThreadId : SV_DispatchThreadID)
     // Select the closest sample
     float minDepth = MIN_DEPTH(MIN_DEPTH(depths.x, depths.y), MIN_DEPTH(depths.z, depths.w));
 
-<<<<<<< Updated upstream
-    _DepthMipChain[COORD_TEXTURE2DX(dstOffset + dispatchThreadId)] = minDepth;
-=======
-<<<<<<< Updated upstream
-    _DepthMipChain[dstOffset + dispatchThreadId] = minDepth;
-=======
     _DepthMipChain[COORD_TEXTURE2DX(dstOffset + dispatchThreadId.xy)] = minDepth;
->>>>>>> Stashed changes
->>>>>>> Stashed changes
 }
 
 #undef MIN_DEPTH

@@ -22,15 +22,7 @@ void KMain(uint2 groupId : SV_GroupID, uint2 groupThreadId : SV_GroupThreadID, u
     const float _FetchBias = 0.9;
 
     // Get distortion values
-<<<<<<< Updated upstream
-    float4 encodedDistortion = LOAD_TEXTURE2DX(_DistortionTexture, dispatchThreadId);
-=======
-<<<<<<< Updated upstream
-    float4 encodedDistortion = LOAD_TEXTURE2D(_DistortionTexture, dispatchThreadId);
-=======
     float4 encodedDistortion = LOAD_TEXTURE2DX(_DistortionTexture, dispatchThreadId.xy);
->>>>>>> Stashed changes
->>>>>>> Stashed changes
 
     float2 distortion;
     float distortionBlur;
@@ -71,13 +63,5 @@ void KMain(uint2 groupId : SV_GroupID, uint2 groupThreadId : SV_GroupThreadID, u
     float mip = (_ColorPyramidScale.z - 1) * clamp(distortionBlur, 0.0, 1.0);
     float4 sampled = SAMPLE_TEXTURE2DX_LOD(_ColorPyramidTexture, s_trilinear_clamp_sampler, distordedUV * _ColorPyramidScale.xy, mip);
 
-<<<<<<< Updated upstream
-    _Destination[COORD_TEXTURE2DX(dispatchThreadId)] = sampled;
-=======
-<<<<<<< Updated upstream
-    _Destination[dispatchThreadId] = sampled;
-=======
     _Destination[COORD_TEXTURE2DX(dispatchThreadId.xy)] = sampled;
->>>>>>> Stashed changes
->>>>>>> Stashed changes
 }

@@ -251,24 +251,10 @@ void SubsurfaceScattering(uint3 groupId       : SV_GroupID,
         float stencilRef = STENCILLIGHTINGUSAGE_SPLIT_LIGHTING;
 
         // Check whether the thread group needs to perform any work.
-<<<<<<< Updated upstream
-        float s00 = LOAD_TEXTURE2DX(_SSSHTile, 2 * groupId + uint2(0, 0)).r;
-        float s10 = LOAD_TEXTURE2DX(_SSSHTile, 2 * groupId + uint2(1, 0)).r;
-        float s01 = LOAD_TEXTURE2DX(_SSSHTile, 2 * groupId + uint2(0, 1)).r;
-        float s11 = LOAD_TEXTURE2DX(_SSSHTile, 2 * groupId + uint2(1, 1)).r;
-=======
-<<<<<<< Updated upstream
-        float s00 = LOAD_TEXTURE2D(_SSSHTile, 2 * groupId + uint2(0, 0)).r;
-        float s10 = LOAD_TEXTURE2D(_SSSHTile, 2 * groupId + uint2(1, 0)).r;
-        float s01 = LOAD_TEXTURE2D(_SSSHTile, 2 * groupId + uint2(0, 1)).r;
-        float s11 = LOAD_TEXTURE2D(_SSSHTile, 2 * groupId + uint2(1, 1)).r;
-=======
         float s00 = LOAD_TEXTURE2DX(_SSSHTile, 2 * groupId.xy + uint2(0, 0)).r;
         float s10 = LOAD_TEXTURE2DX(_SSSHTile, 2 * groupId.xy + uint2(1, 0)).r;
         float s01 = LOAD_TEXTURE2DX(_SSSHTile, 2 * groupId.xy + uint2(0, 1)).r;
         float s11 = LOAD_TEXTURE2DX(_SSSHTile, 2 * groupId.xy + uint2(1, 1)).r;
->>>>>>> Stashed changes
->>>>>>> Stashed changes
 
         // Perform the stencil test (reject at the tile rate).
         processGroup = (stencilRef == s00 || stencilRef == s10 || stencilRef == s01 || stencilRef == s11);

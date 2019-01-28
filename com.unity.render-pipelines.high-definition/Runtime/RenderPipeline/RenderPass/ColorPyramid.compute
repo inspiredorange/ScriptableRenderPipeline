@@ -184,13 +184,5 @@ void MAIN_DOWNSAMPLE(uint3 dispatchThreadId : SV_DispatchThreadID)
     _Mip0[COORD_TEXTURE2DX(c01)] = p01;
     #endif
 
-<<<<<<< Updated upstream
-    _Destination[COORD_TEXTURE2DX(dispatchThreadId)] = (p00 + p01 + p11 + p10) * 0.25;
-=======
-<<<<<<< Updated upstream
-    _Destination[dispatchThreadId] = (p00 + p01 + p11 + p10) * 0.25;
-=======
     _Destination[COORD_TEXTURE2DX(dispatchThreadId.xy)] = (p00 + p01 + p11 + p10) * 0.25;
->>>>>>> Stashed changes
->>>>>>> Stashed changes
 }

@@ -15,17 +15,8 @@ TEXTURE2DX(_Source4);
 [numthreads(KERNEL_SIZE, KERNEL_SIZE, 1)]
 void KERNEL_NAME41(uint3 dispatchThreadId : SV_DispatchThreadID)
 {
-<<<<<<< Updated upstream
-    uint2 positionSS = _RectOffset + dispatchThreadId;
-    _Result1[COORD_TEXTURE2DX(positionSS)] = LOAD_TEXTURE2DX(_Source4, positionSS).x;
-=======
-<<<<<<< Updated upstream
-    _Result1[_RectOffset + dispatchThreadId] = LOAD_TEXTURE2D(_Source4, _RectOffset + dispatchThreadId).x;
-=======
     UNITY_STEREO_ASSIGN_COMPUTE_EYE_INDEX(dispatchThreadId.z);
 
     uint2 positionSS = _RectOffset + dispatchThreadId.xy;
     _Result1[COORD_TEXTURE2DX(positionSS)] = LOAD_TEXTURE2DX(_Source4, positionSS).x;
->>>>>>> Stashed changes
->>>>>>> Stashed changes
 }
