@@ -13,14 +13,16 @@ CBUFFER_END
 
 #pragma kernel KMain
 [numthreads(8, 8, 1)]
-void KMain(uint2 groupId : SV_GroupID, uint2 groupThreadId : SV_GroupThreadID, uint2 dispatchThreadId : SV_DispatchThreadID)
+void KMain(uint2 groupId : SV_GroupID, uint2 groupThreadId : SV_GroupThreadID, uint3 dispatchThreadId : SV_DispatchThreadID)
 {
+    UNITY_STEREO_ASSIGN_COMPUTE_EYE_INDEX(dispatchThreadId.z);
+
     // We use a bias when fetching distortion source pixels
     // This avoid artifacts when a distortion is overlapped by an opaque object
     const float _FetchBias = 0.9;
 
     // Get distortion values
-    float4 encodedDistortion = LOAD_TEXTURE2DX(_DistortionTexture, dispatchThreadId);
+    float4 encodedDistortion = LOAD_TEXTURE2DX(_DistortionTexture, dispatchThreadId.xy);
 
     float2 distortion;
     float distortionBlur;
@@ -31,7 +33,7 @@ void KMain(uint2 groupId : SV_GroupID, uint2 groupThreadId : SV_GroupThreadID, u
     if (!distortionIsSourceValid)
         return;
 
-    int2 distortedEncodedDistortionId = dispatchThreadId + int2(distortion);
+    int2 distortedEncodedDistortionId = dispatchThreadId.xy + int2(distortion);
 
     // Reject distortion if we try to fetch a pixel out of the buffer
     if (any(distortedEncodedDistortionId < 0)
@@ -57,9 +59,9 @@ void KMain(uint2 groupId : SV_GroupID, uint2 groupThreadId : SV_GroupThreadID, u
     }
 
     // Get source pixel for distortion
-    float2 distordedUV = float2((dispatchThreadId + 0.5) + distortion * _FetchBias) * _Size.zw;
+    float2 distordedUV = float2((dispatchThreadId.xy + 0.5) + distortion * _FetchBias) * _Size.zw;
     float mip = (_ColorPyramidScale.z - 1) * clamp(distortionBlur, 0.0, 1.0);
     float4 sampled = SAMPLE_TEXTURE2DX_LOD(_ColorPyramidTexture, s_trilinear_clamp_sampler, distordedUV * _ColorPyramidScale.xy, mip);
 
-    _Destination[COORD_TEXTURE2DX(dispatchThreadId)] = sampled;
+    _Destination[COORD_TEXTURE2DX(dispatchThreadId.xy)] = sampled;
 }

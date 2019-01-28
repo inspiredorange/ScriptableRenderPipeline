@@ -21,14 +21,16 @@ CBUFFER_END
 // Downsample a depth texture by taking the min value of sampled pixels
 // The size of the dispatch is (DstMipSize / KernelSize).
 [numthreads(KERNEL_SIZE, KERNEL_SIZE, 1)]
-void KERNEL_NAME(uint2 dispatchThreadId : SV_DispatchThreadID)
+void KERNEL_NAME(uint3 dispatchThreadId : SV_DispatchThreadID)
 {
+    UNITY_STEREO_ASSIGN_COMPUTE_EYE_INDEX(dispatchThreadId.z);
+
     uint2 srcOffset = _SrcOffsetAndLimit.xy;
     uint2 srcLimit  = _SrcOffsetAndLimit.zw;
     uint2 dstOffset = _DstOffset.xy;
 
     // Upper-left pixel coordinate of quad that this thread will read
-    uint2 srcPixelUL = srcOffset + (dispatchThreadId << 1);
+    uint2 srcPixelUL = srcOffset + (dispatchThreadId.xy << 1);
 
     float p00 = _DepthMipChain[COORD_TEXTURE2DX(min(srcPixelUL + uint2(0u, 0u), srcLimit))];
     float p10 = _DepthMipChain[COORD_TEXTURE2DX(min(srcPixelUL + uint2(1u, 0u), srcLimit))];
@@ -39,7 +41,7 @@ void KERNEL_NAME(uint2 dispatchThreadId : SV_DispatchThreadID)
     // Select the closest sample
     float minDepth = MIN_DEPTH(MIN_DEPTH(depths.x, depths.y), MIN_DEPTH(depths.z, depths.w));
 
-    _DepthMipChain[COORD_TEXTURE2DX(dstOffset + dispatchThreadId)] = minDepth;
+    _DepthMipChain[COORD_TEXTURE2DX(dstOffset + dispatchThreadId.xy)] = minDepth;
 }
 
 #undef MIN_DEPTH
