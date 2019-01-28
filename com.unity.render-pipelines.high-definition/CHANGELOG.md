@@ -123,6 +123,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Rename SampleCameraDepth() functions to LoadCameraDepth() and SampleCameraDepth()
 - LayeredLit layers' foldout are now grouped in one main foldout per layer
 - Shadow alpha clip can now be enabled on lit shader and haor shader enven for opaque
+- Parameter depthSlice on SetRenderTarget functions now defaults to -1 to bind the entire resource
 
 ## [5.2.0-preview] - 2018-11-27
 
