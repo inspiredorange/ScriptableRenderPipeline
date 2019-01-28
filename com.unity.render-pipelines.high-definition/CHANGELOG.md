@@ -43,6 +43,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Added support for overriding terrain detail rendering shaders, via the render pipeline editor resources asset
 - Added xrInstancing flag support to RTHandle
 - Added support for cullmask for decal projectors
+- Added software dynamic resolution support
 
 ### Fixed
 - Fixed logic to disable FPTL with stereo rendering
@@ -96,6 +97,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Fixed issue with alpha shadow clip (was incorrectly clipping object shadow)
 - Fixed an issue where sky cubemap would not be cleared correctly when setting the current sky to None
 - Fixed a typo in Static Lighting Sky component UI
+- Fixed issue with incorrect reset of RenderQueue when switching shader in inspector GUI
+- Fixed issue with variant stripper stripping incorrectly some variants
+- Fixed a case of ambient lighting flickering because of previews
 
 ### Changed
 - ColorPyramid compute shader passes is swapped to pixel shader passes on platforms where the later is faster (Nintendo Switch).
