@@ -131,8 +131,11 @@ void TileGenPass(uint3 id : SV_DispatchThreadID, uint gid : SV_GroupIndex, uint2
 
 #if SCATTERING
 
+// TODO: Consider a conservative line rasterization if bugs arise.
+
 // Line drawing algorithms.
-void LineDrawing(int2 center, float2 lineToDraw, uint centerInfo)
+#if 1
+void Bresenham(int2 center, float2 lineToDraw, uint centerInfo)
 {
     int2 maxCoords = int2(_TileTargetSize.xy - 1);
 
@@ -151,16 +154,16 @@ void LineDrawing(int2 center, float2 lineToDraw, uint centerInfo)
 
     for (int i = 0; i < 32; ++i)
     {
-        if (x == endPoint.x && y == endPoint.y)
+        if (x >= endPoint.x && y >= endPoint.y)
         {
             break;
         }
-        else if (tMax > -delta.x)
+        if (tMax > -delta.x)
         {
             tMax -= delta.y;
             x += steps.x;
         }
-        else if (tMax < delta.y)
+        if (tMax < delta.y)
         {
             tMax += delta.x;
             y += steps.y;
@@ -169,8 +172,8 @@ void LineDrawing(int2 center, float2 lineToDraw, uint centerInfo)
         InterlockedMax(_TileToScatterMax[int2(x, y)], uint(centerInfo));
     }
 }
+#endif
 
-#if 0 
 void DDA(int2 center, float2 lineToDraw, uint centerInfo)
 {
     int2 maxCoords = int2(_TileTargetSize.xy);
@@ -197,7 +200,7 @@ void DDA(int2 center, float2 lineToDraw, uint centerInfo)
     float2 currPoint = startPoint;
 
     const int maxIter = 64;
-    for (int i = 0; ((currPoint.x * dirSign) < end) && (i < maxIter); ++i)
+    for (int i = 0; ((currPoint.x * dirSign) <= end) && (i < maxIter); ++i)
     {
         currPoint += step;
         float2 hitPixel = permute ? currPoint.yx : currPoint;
@@ -205,9 +208,8 @@ void DDA(int2 center, float2 lineToDraw, uint centerInfo)
         InterlockedMax(_TileToScatterMax[ceil(hitPixel)], uint(centerInfo));
     }
 }
-#endif
 
-#define USE_NEIGHBOURHOOD_MIN 0
+#define USE_NEIGHBOURHOOD_MIN 1
 [numthreads(8, 8, 1)]
 void TileNeighbourhood(uint3 dispatchID : SV_DispatchThreadID, uint gid : SV_GroupIndex, uint2 groupThreadId : SV_GroupThreadID, uint3 groupID : SV_GroupID)
 {
@@ -229,11 +231,12 @@ void TileNeighbourhood(uint3 dispatchID : SV_DispatchThreadID, uint gid : SV_Gro
     if (VelocityLengthInPixelsFromEncoded(VelData) > 0.5f)
     {
         // Spread Forward
-        LineDrawing(id, maxVelVectorInTiles, packedTileInfo);
+        DDA(id, maxVelVectorInTiles, packedTileInfo);
         // Spread Backward
-        LineDrawing(id, -maxVelVectorInTiles, packedTileInfo);
+        DDA(id, -maxVelVectorInTiles, packedTileInfo);
     }
 
+    // TODO: We need to find a better min velocity determination.
     #if USE_NEIGHBOURHOOD_MIN
     // Find min of the tile in the 1-ring neighbourhood? This is incorrect, but might be worth perf wise. 
     uint v0 = _TileToScatterMin[clamp(id.xy + int2(-1, 1), int2(0, 0), maxCoords)];
