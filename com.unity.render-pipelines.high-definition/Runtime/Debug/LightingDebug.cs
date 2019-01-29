@@ -15,7 +15,7 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
         IndirectDiffuseOcclusion,
         IndirectSpecularOcclusion
     }
-    
+
     [GenerateHLSL]
     public enum ShadowMapDebugMode
     {

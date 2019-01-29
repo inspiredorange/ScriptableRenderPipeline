@@ -59,7 +59,6 @@ void RayGenAmbientOcclusion()
 	if(depthValue == 0.0f)
 		return;
 
-
 	// Convert this to a world space position
 	PositionInputs posInput = GetPositionInput(currentPixelCoord, 1.0/LaunchDim.xy, depthValue, _InvViewProjMatrix, _ViewMatrix, 0);
 	posInput.positionWS = GetAbsolutePositionWS(posInput.positionWS);
