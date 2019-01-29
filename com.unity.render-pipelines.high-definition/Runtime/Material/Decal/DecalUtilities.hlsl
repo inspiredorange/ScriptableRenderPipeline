@@ -11,7 +11,7 @@ DECLARE_DBUFFER_TEXTURE(_DBufferTexture);
 void ApplyBlendNormal(inout float4 dst, inout int matMask, float2 texCoords, int mapMask, float3x3 decalToWorld, float blend, float lod)
 {
     float4 src;
-    src.xyz = mul(decalToWorld, UnpackNormalmapRGorAG(SAMPLE_TEXTURE2DX_LOD(_DecalAtlas2D, _trilinear_clamp_sampler_DecalAtlas2D, texCoords, lod))) * 0.5f + 0.5f;
+    src.xyz = mul(decalToWorld, UnpackNormalmapRGorAG(SAMPLE_TEXTURE2D_LOD(_DecalAtlas2D, _trilinear_clamp_sampler_DecalAtlas2D, texCoords, lod))) * 0.5f + 0.5f;
     src.w = blend;
     dst.xyz = src.xyz * src.w + dst.xyz * (1.0f - src.w);
     dst.w = dst.w * (1.0f - src.w);
@@ -22,7 +22,7 @@ void ApplyBlendDiffuse(inout float4 dst, inout int matMask, float2 texCoords, fl
 {
     if (diffuseTextureBound)
     {
-        src *= SAMPLE_TEXTURE2DX_LOD(_DecalAtlas2D, _trilinear_clamp_sampler_DecalAtlas2D, texCoords, lod);
+        src *= SAMPLE_TEXTURE2D_LOD(_DecalAtlas2D, _trilinear_clamp_sampler_DecalAtlas2D, texCoords, lod);
     }
     src.w *= blend;
     blend = src.w;  // diffuse texture alpha affects all other channels
@@ -39,7 +39,7 @@ void ApplyBlendDiffuse(inout float4 dst, inout int matMask, float2 texCoords, fl
 // blendParams are material settings to determing blend source and mode for normal and mask map
 void ApplyBlendMask(inout float4 dbuffer2, inout float2 dbuffer3, inout int matMask, float2 texCoords, int mapMask, float albedoBlend, float lod, float decalBlend, inout float normalBlend, float3 blendParams, float4 scalingMAB, float4 remappingAOS) // too many blends!!!
 {
-    float4 src = SAMPLE_TEXTURE2DX_LOD(_DecalAtlas2D, _trilinear_clamp_sampler_DecalAtlas2D, texCoords, lod);
+    float4 src = SAMPLE_TEXTURE2D_LOD(_DecalAtlas2D, _trilinear_clamp_sampler_DecalAtlas2D, texCoords, lod);
     src.x = scalingMAB.x * src.x;
     src.y = lerp(remappingAOS.x, remappingAOS.y, src.y);
     src.z = scalingMAB.z * src.z;

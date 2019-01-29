@@ -6,7 +6,7 @@
 
 StructuredBuffer<DecalData> _DecalDatas;
 
-TEXTURE2DX(_DecalAtlas2D);
+TEXTURE2D(_DecalAtlas2D);
 SAMPLER(_trilinear_clamp_sampler_DecalAtlas2D);
 
 #if defined(PLATFORM_NEEDS_UNORM_UAV_SPECIFIER)
