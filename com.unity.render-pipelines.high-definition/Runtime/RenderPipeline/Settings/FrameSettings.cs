@@ -21,11 +21,13 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
         None = -1,
 
         //rendering settings from 0 to 19
-        [FrameSettingsField(0, autoName: LitShaderMode, type: FrameSettingsFieldAttribute.DisplayType.BoolAsEnumPopup, targetType: typeof(LitShaderMode))]
+        [FrameSettingsField(0, autoName: LitShaderMode, type: FrameSettingsFieldAttribute.DisplayType.BoolAsEnumPopup, targetType: typeof(LitShaderMode), customOrderInGroup: 0)]
         LitShaderMode = 0,
-        [FrameSettingsField(0, displayedName: "Depth Prepass Within Deferred")]
+        [FrameSettingsField(0, displayedName: "Depth Prepass within Deferred", positiveDependencies: new[] { LitShaderMode })]
         DepthPrepassWithDeferredRendering = 1,
-        [FrameSettingsField(0, autoName: OpaqueObjects)]
+        [FrameSettingsField(0, displayedName: "MSAA within Forward", negativeDependencies: new[] { LitShaderMode }, customOrderInGroup: 2)]
+        MSAA = 31,
+        [FrameSettingsField(0, autoName: OpaqueObjects, customOrderInGroup: 3)]
         OpaqueObjects = 2,
         [FrameSettingsField(0, autoName: TransparentObjects)]
         TransparentObjects = 3,
@@ -38,7 +40,7 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
         TransparentPostpass = 9,
         [FrameSettingsField(0, autoName: MotionVectors)]
         MotionVectors = 10,
-        [FrameSettingsField(0, autoName: ObjectMotionVectors, dependencies: new[] { MotionVectors })]
+        [FrameSettingsField(0, autoName: ObjectMotionVectors, positiveDependencies: new[] { MotionVectors })]
         ObjectMotionVectors = 11,
         [FrameSettingsField(0, autoName: Decals)]
         Decals = 12,
@@ -66,29 +68,27 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
         Transmission = 26,
         [FrameSettingsField(1, autoName: AtmosphericScattering)]
         AtmosphericScattering = 27,
-        [FrameSettingsField(1, autoName: Volumetrics, dependencies: new[] { AtmosphericScattering })]
+        [FrameSettingsField(1, autoName: Volumetrics, positiveDependencies: new[] { AtmosphericScattering })]
         Volumetrics = 28,
-        [FrameSettingsField(1, autoName: ReprojectionForVolumetrics, dependencies: new[] { AtmosphericScattering })]
+        [FrameSettingsField(1, autoName: ReprojectionForVolumetrics, positiveDependencies: new[] { AtmosphericScattering })]
         ReprojectionForVolumetrics = 29,
         [FrameSettingsField(1, autoName: LightLayers)]
         LightLayers = 30,
-        [FrameSettingsField(1, autoName: MSAA)]
-        MSAA = 31,
-        [FrameSettingsField(0)]
+        [FrameSettingsField(1, autoName: ExposureControl, customOrderInGroup: 32)]
         ExposureControl = 32,
         
         //async settings from 40 to 59
         [FrameSettingsField(2, autoName: AsyncCompute)]
         AsyncCompute = 40,
-        [FrameSettingsField(2, autoName: LightListAsync, dependencies: new[] { AsyncCompute })]
+        [FrameSettingsField(2, autoName: LightListAsync, positiveDependencies: new[] { AsyncCompute })]
         LightListAsync = 41,
-        [FrameSettingsField(2, autoName: SSRAsync, dependencies: new[] { AsyncCompute })]
+        [FrameSettingsField(2, autoName: SSRAsync, positiveDependencies: new[] { AsyncCompute })]
         SSRAsync = 42,
-        [FrameSettingsField(2, autoName: SSAOAsync, dependencies: new[] { AsyncCompute })]
+        [FrameSettingsField(2, autoName: SSAOAsync, positiveDependencies: new[] { AsyncCompute })]
         SSAOAsync = 43,
-        [FrameSettingsField(2, autoName: ContactShadowsAsync, dependencies: new[] { AsyncCompute })]
+        [FrameSettingsField(2, autoName: ContactShadowsAsync, positiveDependencies: new[] { AsyncCompute })]
         ContactShadowsAsync = 44,
-        [FrameSettingsField(2, autoName: VolumeVoxelizationsAsync, dependencies: new[] { AsyncCompute })]
+        [FrameSettingsField(2, autoName: VolumeVoxelizationsAsync, positiveDependencies: new[] { AsyncCompute })]
         VolumeVoxelizationsAsync = 45,
 
         //from 60 to 119 : space for new scopes
@@ -100,11 +100,11 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
         BigTilePrepass = 121,
         [FrameSettingsField(3, autoName: DeferredTileAndCluster)]
         DeferredTileAndCluster = 122,
-        [FrameSettingsField(3, autoName: ComputeLightEvaluation, dependencies: new[] { DeferredTileAndCluster })]
+        [FrameSettingsField(3, autoName: ComputeLightEvaluation, positiveDependencies: new[] { DeferredTileAndCluster })]
         ComputeLightEvaluation = 123,
-        [FrameSettingsField(3, autoName: ComputeLightVariants, dependencies: new[] { ComputeLightEvaluation, DeferredTileAndCluster })]
+        [FrameSettingsField(3, autoName: ComputeLightVariants, positiveDependencies: new[] { ComputeLightEvaluation, DeferredTileAndCluster })]
         ComputeLightVariants = 124,
-        [FrameSettingsField(3, autoName: ComputeMaterialVariants, dependencies: new[] { ComputeLightEvaluation, DeferredTileAndCluster })]
+        [FrameSettingsField(3, autoName: ComputeMaterialVariants, positiveDependencies: new[] { ComputeLightEvaluation, DeferredTileAndCluster })]
         ComputeMaterialVariants = 125,
         Reflection = 126, //set by engine, not for DebugMenu/Inspector
 
@@ -113,7 +113,7 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
 
     /// <summary>BitField that state which element is overrided.</summary>
     [Serializable]
-    [System.Diagnostics.DebuggerDisplay("FrameSettings overriding {mask.humanizedData}")]
+    [System.Diagnostics.DebuggerDisplay("{mask.humanizedData}")]
     public struct FrameSettingsOverrideMask
     {
         [SerializeField]
@@ -122,7 +122,7 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
     
     /// <summary>Per renderer and per frame settings.</summary>
     [Serializable]
-    [System.Diagnostics.DebuggerDisplay("FrameSettings {bitDatas.humanizedData}")]
+    [System.Diagnostics.DebuggerDisplay("{bitDatas.humanizedData}")]
     public partial struct FrameSettings
     {
         /// <summary>Default FrameSettings for Camera renderer.</summary>
@@ -302,7 +302,7 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
 
             // VR TODO: The work will be implemented piecemeal to support all passes
             // No recursive reflections
-            sanitazedFrameSettings.bitDatas[(int)FrameSettingsField.SSR] &= !reflection && renderPipelineSettings.supportSSR && !msaa && !preview && stereo;
+            sanitazedFrameSettings.bitDatas[(int)FrameSettingsField.SSR] &= !reflection && renderPipelineSettings.supportSSR && !msaa && !preview && !stereo;
             sanitazedFrameSettings.bitDatas[(int)FrameSettingsField.SSAO] &= renderPipelineSettings.supportSSAO && !preview;
             sanitazedFrameSettings.bitDatas[(int)FrameSettingsField.SubsurfaceScattering] &= !reflection && renderPipelineSettings.supportSubsurfaceScattering;
 
@@ -356,16 +356,32 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
         /// <param name="additionalData">Additional data of the camera rendering.</param>
         /// <param name="hdrpAsset">HDRenderPipelineAsset contening default FrameSettings.</param>
         public static void AggregateFrameSettings(ref FrameSettings aggregatedFrameSettings, Camera camera, HDAdditionalCameraData additionalData, HDRenderPipelineAsset hdrpAsset)
+            => AggregateFrameSettings(
+                ref aggregatedFrameSettings,
+                camera,
+                additionalData,
+                ref hdrpAsset.GetDefaultFrameSettings(additionalData?.defaultFrameSettings ?? FrameSettingsRenderType.Camera), //fallback on Camera for SceneCamera and PreviewCamera
+                hdrpAsset.GetRenderPipelineSettings()
+                );
+
+        // Note: this version is the one tested as there is issue getting HDRenderPipelineAsset in batchmode in unit test framework currently.
+        /// <summary>Aggregation is default with override of the renderer then sanitazed depending on supported features of hdrpasset.</summary>
+        /// <param name="aggregatedFrameSettings">The aggregated FrameSettings result.</param>
+        /// <param name="camera">The camera rendering.</param>
+        /// <param name="additionalData">Additional data of the camera rendering.</param>
+        /// <param name="defaultFrameSettings">Base framesettings to copy prior any override.</param>
+        /// <param name="supportedFeatures">Currently supported feature for the sanitazation pass.</param>
+        public static void AggregateFrameSettings(ref FrameSettings aggregatedFrameSettings, Camera camera, HDAdditionalCameraData additionalData, ref FrameSettings defaultFrameSettings, RenderPipelineSettings supportedFeatures)
         {
-            aggregatedFrameSettings = hdrpAsset.GetDefaultFrameSettings(additionalData?.defaultFrameSettings ?? FrameSettingsRenderType.Camera); //fallback on Camera for SceneCamera and PreviewCamera
+            aggregatedFrameSettings = defaultFrameSettings; //fallback on Camera for SceneCamera and PreviewCamera
             if (additionalData && additionalData.customRenderingSettings)
                 Override(ref aggregatedFrameSettings, additionalData.renderingPathCustomFrameSettings, additionalData.renderingPathCustomFrameSettingsOverrideMask);
-            Sanitize(ref aggregatedFrameSettings, camera, hdrpAsset.GetRenderPipelineSettings());
+            Sanitize(ref aggregatedFrameSettings, camera, supportedFeatures);
         }
-        
+
         public static bool operator ==(FrameSettings a, FrameSettings b) => a.bitDatas == b.bitDatas;
         public static bool operator !=(FrameSettings a, FrameSettings b) => a.bitDatas != b.bitDatas;
-        public override bool Equals(object obj) => (obj is FrameSettings) && bitDatas.Equals((FrameSettings)obj);
+        public override bool Equals(object obj) => (obj is FrameSettings) && bitDatas.Equals(((FrameSettings)obj).bitDatas);
         public override int GetHashCode() => -1690259335 + bitDatas.GetHashCode();
     }
 }
