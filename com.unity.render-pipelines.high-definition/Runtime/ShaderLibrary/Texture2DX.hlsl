@@ -26,27 +26,36 @@
 
 // Helper macros to handle XR instancing with Texture2DArray
 // Render textures allocated with the flag 'xrInstancing' used Texture2DArray where each slice is associated to an eye.
-// unity_StereoEyeIndex is used to select the eye in the current context.
+// With single-pass stereo instancing, unity_StereoEyeIndex is used to select the eye in the current context.
+// Otherwise, the index is statically set to 0 if possible.
 
 #if (SHADEROPTIONS_USE_ARRAY_FOR_TEXTURE2DX != 0) && !defined(FORCE_NO_TEXTURE2DX_ARRAY)
     #define USE_TEXTURE2DX_AS_ARRAY
 #endif
 
 #if defined(USE_TEXTURE2DX_AS_ARRAY)
+
+    // Only single-pass stereo instancing used array indexing
+    #if defined(UNITY_STEREO_INSTANCING_ENABLED)
+        #define SLICE_ARRAY_INDEX   unity_StereoEyeIndex
+    #else
+        #define SLICE_ARRAY_INDEX  0
+    #endif
+
     #define TEXTURE2DX(textureName)                                         TEXTURE2D_ARRAY(textureName)
     #define TEXTURE2DX_FLOAT(textureName)                                   TEXTURE2D_ARRAY_FLOAT(textureName)
     #define TEXTURE2DX_MSAA(type, textureName)                              Texture2DMSArray<type> textureName
 
     #define RW_TEXTURE2DX(type, textureName)                                RW_TEXTURE2D_ARRAY(type, textureName)
-    #define COORD_TEXTURE2DX(pixelCoord)                                    uint3(pixelCoord, unity_StereoEyeIndex)
-    #define LOAD_TEXTURE2DX(textureName, unCoord2)                          LOAD_TEXTURE2D_ARRAY(textureName, unCoord2, unity_StereoEyeIndex)
-    #define LOAD_TEXTURE2DX_MSAA(textureName, unCoord2, sampleIndex)        LOAD_TEXTURE2D_ARRAY_MSAA(textureName, unCoord2, unity_StereoEyeIndex, sampleIndex)
-    #define LOAD_TEXTURE2DX_LOD(textureName, unCoord2, lod)                 LOAD_TEXTURE2D_ARRAY_LOD(textureName, unCoord2, unity_StereoEyeIndex, lod)
-    #define SAMPLE_TEXTURE2DX(textureName, samplerName, coord2)             SAMPLE_TEXTURE2D_ARRAY(textureName, samplerName, coord2, unity_StereoEyeIndex)
-    #define SAMPLE_TEXTURE2DX_LOD(textureName, samplerName, coord2, lod)    SAMPLE_TEXTURE2D_ARRAY_LOD(textureName, samplerName, coord2, unity_StereoEyeIndex, lod)
-    #define GATHER_TEXTURE2DX(textureName, samplerName, coord2)             GATHER_TEXTURE2D_ARRAY(textureName, samplerName, coord2, unity_StereoEyeIndex)
-    #define GATHER_RED_TEXTURE2DX(textureName, samplerName, coord2)         GATHER_RED_TEXTURE2D(textureName, samplerName, float3(coord2, unity_StereoEyeIndex))
-    #define GATHER_GREEN_TEXTURE2DX(textureName, samplerName, coord2)       GATHER_GREEN_TEXTURE2D(textureName, samplerName, float3(coord2, unity_StereoEyeIndex))
+    #define COORD_TEXTURE2DX(pixelCoord)                                    uint3(pixelCoord, SLICE_ARRAY_INDEX)
+    #define LOAD_TEXTURE2DX(textureName, unCoord2)                          LOAD_TEXTURE2D_ARRAY(textureName, unCoord2, SLICE_ARRAY_INDEX)
+    #define LOAD_TEXTURE2DX_MSAA(textureName, unCoord2, sampleIndex)        LOAD_TEXTURE2D_ARRAY_MSAA(textureName, unCoord2, SLICE_ARRAY_INDEX, sampleIndex)
+    #define LOAD_TEXTURE2DX_LOD(textureName, unCoord2, lod)                 LOAD_TEXTURE2D_ARRAY_LOD(textureName, unCoord2, SLICE_ARRAY_INDEX, lod)
+    #define SAMPLE_TEXTURE2DX(textureName, samplerName, coord2)             SAMPLE_TEXTURE2D_ARRAY(textureName, samplerName, coord2, SLICE_ARRAY_INDEX)
+    #define SAMPLE_TEXTURE2DX_LOD(textureName, samplerName, coord2, lod)    SAMPLE_TEXTURE2D_ARRAY_LOD(textureName, samplerName, coord2, SLICE_ARRAY_INDEX, lod)
+    #define GATHER_TEXTURE2DX(textureName, samplerName, coord2)             GATHER_TEXTURE2D_ARRAY(textureName, samplerName, coord2, SLICE_ARRAY_INDEX)
+    #define GATHER_RED_TEXTURE2DX(textureName, samplerName, coord2)         GATHER_RED_TEXTURE2D(textureName, samplerName, float3(coord2, SLICE_ARRAY_INDEX))
+    #define GATHER_GREEN_TEXTURE2DX(textureName, samplerName, coord2)       GATHER_GREEN_TEXTURE2D(textureName, samplerName, float3(coord2, SLICE_ARRAY_INDEX))
 #else
     #define TEXTURE2DX                                                      TEXTURE2D
     #define TEXTURE2DX_FLOAT                                                TEXTURE2D_FLOAT
