@@ -305,18 +305,7 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
                 bloomBlurCS = Load<ComputeShader>(HDRenderPipelinePath + "PostProcessing/Shaders/BloomBlur.compute"),
                 bloomUpsampleCS = Load<ComputeShader>(HDRenderPipelinePath + "PostProcessing/Shaders/BloomUpsample.compute"),
                 finalPassPS = Load<Shader>(HDRenderPipelinePath + "PostProcessing/Shaders/FinalPass.shader")
-            
-#if ENABLE_RAYTRACING
-                ,
-                aoRaytracing = Load<RaytracingShader>(HDRenderPipelinePath + "RenderPipeline/Raytracing/Shaders/RaytracingAmbientOcclusion.raytrace"),
-                reflectionRaytracing = Load<RaytracingShader>(HDRenderPipelinePath + "RenderPipeline/Raytracing/Shaders/RaytracingReflections.raytrace"),
-                shadowsRaytracing = Load<RaytracingShader>(HDRenderPipelinePath + "RenderPipeline/Raytracing/Shaders/RaytracingAreaShadows.raytrace"),
-                areaBillateralFilterCS = Load<ComputeShader>(HDRenderPipelinePath + "RenderPipeline/Raytracing/Shaders/AreaBilateralShadow.compute"),
-                reflectionBilateralFilterCS = Load<ComputeShader>(HDRenderPipelinePath + "RenderPipeline/Raytracing/Shaders/GaussianBilateral.compute"),
-                lightClusterBuildCS = Load<ComputeShader>(HDRenderPipelinePath + "RenderPipeline/Raytracing/Shaders/RaytracingLightCluster.compute"),
-                lightClusterDebugCS = Load<ComputeShader>(HDRenderPipelinePath + "RenderPipeline/Raytracing/Shaders/DebugLightCluster.compute")
-#endif
-        };
+            };
 
 #if ENABLE_RAYTRACING
             LoadRayTraceShaders();
