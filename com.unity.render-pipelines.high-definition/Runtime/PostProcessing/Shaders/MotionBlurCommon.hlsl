@@ -29,12 +29,10 @@ RW_TEXTURE2D(float3, _TileMinMaxVel);
 TEXTURE2D(_TileMinMaxVel);
 #endif
 
+
 #if NEIGHBOURHOOD_PASS
 RW_TEXTURE2D(uint, _TileToScatterMax);
 RW_TEXTURE2D(uint, _TileToScatterMin);
-RW_TEXTURE2D(float3, _TileMaxNeighbourhood);
-#else
-TEXTURE2D(_TileMaxNeighbourhood);
 #endif
 
 
