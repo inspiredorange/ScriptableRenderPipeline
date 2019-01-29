@@ -25,10 +25,6 @@ RWTexture2D<float4> 					_AmbientOcclusionTextureRW;
 RWTexture2D<float> 						_RaytracingHitDistanceTexture;
 RWTexture2D<float4> 					_RaytracingVSNormalTexture;
 
-// Raycount
-uint                _RayCountEnabled;
-RWTexture2D<uint4>  _RayCountTexture;
-
 [shader("miss")]
 void MissShaderAmbientOcclusion(inout RayIntersection rayIntersection : SV_RayPayload)
 {

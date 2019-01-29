@@ -32,10 +32,6 @@ RWTexture2D<float4>     _SNTextureUAV;
 RWTexture2D<float4>     _UNTextureUAV;
 RWTexture2D<float4>     _UTextureUAV;
 
-// Raycount
-uint                _RayCountEnabled;
-RWTexture2D<uint4>  _RayCountTexture;
-
 struct MISSamplingInput
 {
     float2 noiseValue;

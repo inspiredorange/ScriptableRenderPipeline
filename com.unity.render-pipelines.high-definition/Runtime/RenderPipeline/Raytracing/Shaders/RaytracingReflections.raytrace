@@ -23,10 +23,6 @@ Texture2D<float>						_DepthTexture;
 // Output structure of the reflection raytrace shader
 RWTexture2D<float4> 					_SsrLightingTextureRW;
 
-// Raycount
-uint                _RayCountEnabled;
-RWTexture2D<uint4>  _RayCountTexture;
-
 [shader("miss")]
 void MissShaderReflections(inout RayIntersection rayIntersection : SV_RayPayload)
 {

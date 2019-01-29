@@ -4,6 +4,10 @@
 // The target acceleration acceleration structure
 RaytracingAccelerationStructure         _RaytracingAccelerationStructure;
 
+// Raycount resources - TODO generic raytracing include file?
+int                 _RayCountEnabled;
+RWTexture2D<uint4>  _RayCountTexture;
+
 // Ray data used for the intersections
 float                                   _RaytracingRayBias;
 float                                   _RaytracingRayMaxLength;
