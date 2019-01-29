@@ -50,7 +50,6 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
             m_ShadowVeryHigh = new ShaderKeyword("SHADOW_VERY_HIGH");
             m_WriteNormalBuffer = new ShaderKeyword("WRITE_NORMAL_BUFFER");
             m_WriteMSAADepth = new ShaderKeyword("WRITE_MSAA_DEPTH");
-            m_SubsurfaceScattering = new ShaderKeyword("OUTPUT_SPLIT_LIGHTING");
 
             m_ShadowVariants = new Dictionary<HDShadowQuality, ShaderKeyword>
             {

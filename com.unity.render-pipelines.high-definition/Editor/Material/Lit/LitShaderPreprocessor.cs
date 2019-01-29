@@ -66,6 +66,8 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
                     // If we are transparent we use cluster lighting and not tile lighting
                     if (inputData.shaderKeywordSet.IsEnabled(m_TileLighting))
                         return true;
+
+               //     if(inputData.shaderKeywordSet.IsEnabled())
                 }
                 else // Opaque
                 {

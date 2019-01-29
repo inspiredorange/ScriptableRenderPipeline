@@ -223,11 +223,11 @@ void TileNeighbourhood(uint3 dispatchID : SV_DispatchThreadID, uint gid : SV_Gro
     float2 VelData = UnpackVel(packedTileInfo);
 
     // Covert to a per pixel velocity.
-    float2 maxVelVectorInTiles = DecodeVelocityFromPacked(VelData.xy) * _TileTargetSize.xy * 0.5f;
+    float2 maxVelVectorInTiles = DecodeVelocityFromPacked(VelData.xy) *  _TileTargetSize.xy * 0.5f;
 
 
-    // If the central velocity is small (less than a tile), no need to spread it.
-    if (VelocityLengthInPixelsFromEncoded(VelData) > TILE_SIZE * 0.5f)
+    // If the central velocity is small, no need to spread it.
+    if (VelocityLengthInPixelsFromEncoded(VelData) > 0.5f)
     {
         // Spread Forward
         LineDrawing(id, maxVelVectorInTiles, packedTileInfo);

@@ -54,6 +54,7 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
             public static GUIContent transparentDepthPrepassEnableText = new GUIContent("Transparent Depth Prepass", "Render a depth prepass for transparent object - Improve sorting");
             public static GUIContent transparentDepthPostpassEnableText = new GUIContent("Transparent Depth Postpass", "Render a depth postpass for transparent object - Improve PostProcess effect like DOF");
             public static GUIContent transparentBackfaceEnableText = new GUIContent("Back Then Front Rendering", "It allow to better sort transparent mesh by first rendering back faces then front faces in two separate drawcall");
+            public static GUIContent transperentWritingVelocityText = new GUIContent("Transparent Writes Velocity", "The transparent object will write velocity vectors, replacing what was previously rendered in the buffer.");
 
             public static GUIContent transparentSortPriorityText = new GUIContent("Sorting Priority", "Allow manually define sorting order based on priority (from -100 to +100) to solve sorting issue with transparent");
             public static GUIContent enableTransparentFogText = new GUIContent("Receive fog", "Receive fog on transparent material");
@@ -114,6 +115,8 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
         protected const string kTransparentBackfaceEnable = "_TransparentBackfaceEnable";
         protected MaterialProperty transparentSortPriority = null;
         protected const string kTransparentSortPriority = "_TransparentSortPriority";
+        protected MaterialProperty transparentWritingVelocity = null;
+        protected const string kTransparentWritingVelocity = "_TransparentWritingVelocity";
         protected MaterialProperty doubleSidedEnable = null;
         protected const string kDoubleSidedEnable = "_DoubleSidedEnable";
         protected MaterialProperty blendMode = null;
@@ -185,6 +188,8 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
             transparentBackfaceEnable = FindProperty(kTransparentBackfaceEnable, props, false);
 
             transparentSortPriority = FindProperty(kTransparentSortPriority, props, false);
+
+            transparentWritingVelocity = FindProperty(kTransparentWritingVelocity, props, false);
 
             doubleSidedEnable = FindProperty(kDoubleSidedEnable, props, false);
             blendMode = FindProperty(kBlendMode, props, false);
@@ -340,6 +345,9 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
                 if (transparentDepthPostpassEnable != null)
                     m_MaterialEditor.ShaderProperty(transparentDepthPostpassEnable, StylesBaseUnlit.transparentDepthPostpassEnableText);
 
+                if(transparentWritingVelocity != null)
+                    m_MaterialEditor.ShaderProperty(transparentWritingVelocity, StylesBaseUnlit.transperentWritingVelocityText);
+
                 EditorGUI.indentLevel--;
             }
 
@@ -425,6 +433,9 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
 
             SurfaceType surfaceType = material.HasProperty(kSurfaceType) ? (SurfaceType)material.GetFloat(kSurfaceType) : SurfaceType.Opaque;
             CoreUtils.SetKeyword(material, "_SURFACE_TYPE_TRANSPARENT", surfaceType == SurfaceType.Transparent);
+
+            bool transparentWritesVelocity = (surfaceType == SurfaceType.Transparent) && material.HasProperty(kTransparentWritingVelocity) && material.GetInt(kTransparentWritingVelocity) > 0;
+            CoreUtils.SetKeyword(material, "_TRANSPARENT_WRITES_VELOCITY", transparentWritesVelocity);
 
             bool enableBlendModePreserveSpecularLighting = (surfaceType == SurfaceType.Transparent) && material.HasProperty(kEnableBlendModePreserveSpecularLighting) && material.GetFloat(kEnableBlendModePreserveSpecularLighting) > 0.0f;
             CoreUtils.SetKeyword(material, "_BLENDMODE_PRESERVE_SPECULAR_LIGHTING", enableBlendModePreserveSpecularLighting);

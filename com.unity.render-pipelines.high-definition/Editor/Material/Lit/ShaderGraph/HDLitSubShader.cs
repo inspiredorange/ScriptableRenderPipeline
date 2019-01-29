@@ -443,6 +443,7 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
             MaterialName = "Lit",
             ShaderPassName = "SHADERPASS_FORWARD",
             CullOverride = "Cull Front",
+          //  ColorMaskOverride = " [_ColorMaskTransparentVel] 1",
             ExtraDefines = HDSubShaderUtilities.s_ExtraDefinesForwardTransparent,
             Includes = new List<string>()
             {
@@ -575,6 +576,9 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
                 {
                     pass.CullOverride = null;
                 }
+
+                //pass.ColorMaskOverride = " [_ColorMaskTransparentVel] 1";
+
             }
         };
 
@@ -825,6 +829,11 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
                 {
                     activeFields.Add("AlphaFog");
                 }
+
+                if (masterNode.transparentWritesVelocity.isOn)
+                {
+                    activeFields.Add("TransparentWritesVelocity");
+                }
             }
 
             if (!masterNode.receiveDecals.isOn)
@@ -836,7 +845,6 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
             {
                 activeFields.Add("DisableSSR");
             }
-
 
             if (masterNode.specularAA.isOn && pass.PixelShaderUsesSlot(HDLitMasterNode.SpecularAAThresholdSlotId) && pass.PixelShaderUsesSlot(HDLitMasterNode.SpecularAAScreenSpaceVarianceSlotId))
             {
