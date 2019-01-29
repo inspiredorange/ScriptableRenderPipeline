@@ -18,6 +18,7 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
         MaterialPropertyBlock m_DrawRayCountProperties = new MaterialPropertyBlock();
         // Raycount shader
         ComputeShader m_RayCountCompute;
+        bool m_RayCountEnabled;
 
         int _TotalAORaysTex = Shader.PropertyToID("_TotalAORaysTex");
         int _TotalReflectionRaysTex = Shader.PropertyToID("_TotalReflectionRaysTex");
@@ -56,42 +57,62 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
             }
         }
 
+        public int rayCountEnabled
+        {
+            get
+            {
+                return m_RayCountEnabled ? 1 : 0;
+            }
+        }
+
         public void ClearRayCount(CommandBuffer cmd, HDCamera camera)
         {
-            HDUtils.SetRenderTarget(cmd, camera, m_TotalAORaysTex, ClearFlag.Color);
-            HDUtils.SetRenderTarget(cmd, camera, m_TotalReflectionRaysTex, ClearFlag.Color);
-            HDUtils.SetRenderTarget(cmd, camera, m_TotalAreaShadowRaysTex, ClearFlag.Color);            
-            HDUtils.SetRenderTarget(cmd, camera, m_RayCountTex, ClearFlag.Color);
+            if (m_RayCountEnabled)
+            {
+                HDUtils.SetRenderTarget(cmd, camera, m_TotalAORaysTex, ClearFlag.Color);
+                HDUtils.SetRenderTarget(cmd, camera, m_TotalReflectionRaysTex, ClearFlag.Color);
+                HDUtils.SetRenderTarget(cmd, camera, m_TotalAreaShadowRaysTex, ClearFlag.Color);
+                HDUtils.SetRenderTarget(cmd, camera, m_RayCountTex, ClearFlag.Color);
+            }
+        }
+
+        public void Update(CommandBuffer cmd, HDCamera camera, bool rayCountEnabled)
+        {
+            m_RayCountEnabled = rayCountEnabled;
+            ClearRayCount(cmd, camera);
         }
 
         public void RenderRayCount(CommandBuffer cmd, HDCamera camera, RTHandleSystem.RTHandle colorTex, Color fontColor)
         {
-            using (new ProfilingSample(cmd, "Raytracing Debug Overlay", CustomSamplerId.RaytracingDebug.GetSampler()))
+            if (m_RayCountEnabled)
             {
-                int width = camera.actualWidth;
-                int height = camera.actualHeight;
+                using (new ProfilingSample(cmd, "Raytracing Debug Overlay", CustomSamplerId.RaytracingDebug.GetSampler()))
+                {
+                    int width = camera.actualWidth;
+                    int height = camera.actualHeight;
 
-                // Sum across all rays per pixel
-                int countKernelIdx = m_RayCountCompute.FindKernel("CS_CountRays");
-                uint groupSizeX = 0, groupSizeY = 0, groupSizeZ = 0;
-                m_RayCountCompute.GetKernelThreadGroupSizes(countKernelIdx, out groupSizeX, out groupSizeY, out groupSizeZ);
-                int dispatchWidth = 0, dispatchHeight = 0;
-                dispatchWidth = (int)((width + groupSizeX - 1) / groupSizeX);
-                dispatchHeight = (int)((height + groupSizeY - 1) / groupSizeY);
-                cmd.SetComputeTextureParam(m_RayCountCompute, countKernelIdx, HDShaderIDs._RayCountTexture, m_RayCountTex);
-                cmd.SetComputeTextureParam(m_RayCountCompute, countKernelIdx, _TotalAORaysTex, m_TotalAORaysTex);
-                cmd.SetComputeTextureParam(m_RayCountCompute, countKernelIdx, _TotalReflectionRaysTex, m_TotalReflectionRaysTex);
-                cmd.SetComputeTextureParam(m_RayCountCompute, countKernelIdx, _TotalAreaShadowRaysTex, m_TotalAreaShadowRaysTex);
-                cmd.DispatchCompute(m_RayCountCompute, countKernelIdx, dispatchWidth, dispatchHeight, 1);
-                
-                // Draw overlay
-                m_DrawRayCountProperties.SetTexture(_TotalAORaysTex, m_TotalAORaysTex);
-                m_DrawRayCountProperties.SetTexture(_TotalReflectionRaysTex, m_TotalReflectionRaysTex);
-                m_DrawRayCountProperties.SetTexture(_TotalAreaShadowRaysTex, m_TotalAreaShadowRaysTex);
-                m_DrawRayCountProperties.SetTexture(HDShaderIDs._CameraColorTexture, colorTex);
-                m_DrawRayCountProperties.SetTexture(HDShaderIDs._DebugFont, s_DebugFontTex);
-                m_DrawRayCountProperties.SetColor(_FontColor, fontColor);
-                CoreUtils.DrawFullScreen(cmd, m_DrawRayCount, m_DrawRayCountProperties);
+                    // Sum across all rays per pixel
+                    int countKernelIdx = m_RayCountCompute.FindKernel("CS_CountRays");
+                    uint groupSizeX = 0, groupSizeY = 0, groupSizeZ = 0;
+                    m_RayCountCompute.GetKernelThreadGroupSizes(countKernelIdx, out groupSizeX, out groupSizeY, out groupSizeZ);
+                    int dispatchWidth = 0, dispatchHeight = 0;
+                    dispatchWidth = (int)((width + groupSizeX - 1) / groupSizeX);
+                    dispatchHeight = (int)((height + groupSizeY - 1) / groupSizeY);
+                    cmd.SetComputeTextureParam(m_RayCountCompute, countKernelIdx, HDShaderIDs._RayCountTexture, m_RayCountTex);
+                    cmd.SetComputeTextureParam(m_RayCountCompute, countKernelIdx, _TotalAORaysTex, m_TotalAORaysTex);
+                    cmd.SetComputeTextureParam(m_RayCountCompute, countKernelIdx, _TotalReflectionRaysTex, m_TotalReflectionRaysTex);
+                    cmd.SetComputeTextureParam(m_RayCountCompute, countKernelIdx, _TotalAreaShadowRaysTex, m_TotalAreaShadowRaysTex);
+                    cmd.DispatchCompute(m_RayCountCompute, countKernelIdx, dispatchWidth, dispatchHeight, 1);
+
+                    // Draw overlay
+                    m_DrawRayCountProperties.SetTexture(_TotalAORaysTex, m_TotalAORaysTex);
+                    m_DrawRayCountProperties.SetTexture(_TotalReflectionRaysTex, m_TotalReflectionRaysTex);
+                    m_DrawRayCountProperties.SetTexture(_TotalAreaShadowRaysTex, m_TotalAreaShadowRaysTex);
+                    m_DrawRayCountProperties.SetTexture(HDShaderIDs._CameraColorTexture, colorTex);
+                    m_DrawRayCountProperties.SetTexture(HDShaderIDs._DebugFont, s_DebugFontTex);
+                    m_DrawRayCountProperties.SetColor(_FontColor, fontColor);
+                    CoreUtils.DrawFullScreen(cmd, m_DrawRayCount, m_DrawRayCountProperties);
+                }
             }
         }
     }

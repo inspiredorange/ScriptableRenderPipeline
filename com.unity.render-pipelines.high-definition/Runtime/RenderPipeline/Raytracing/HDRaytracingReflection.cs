@@ -117,7 +117,8 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
                 cmd.SetRaytracingTextureParam(reflectionShader, m_RayGenShaderName, HDShaderIDs._DepthTexture, m_SharedRTManager.GetDepthStencilBuffer());
                 cmd.SetRaytracingTextureParam(reflectionShader, m_RayGenShaderName, HDShaderIDs._NormalBufferTexture, m_SharedRTManager.GetNormalBuffer());
 
-                // Set ray count tex - Todo IF DEBUG
+                // Set ray count tex
+                cmd.SetRaytracingIntParam(reflectionShader, HDShaderIDs._RayCountEnabled, m_RaytracingManager.rayCountManager.rayCountEnabled);
                 cmd.SetRaytracingTextureParam(reflectionShader, m_RayGenShaderName, HDShaderIDs._RayCountTexture, m_RaytracingManager.rayCountManager.rayCountTex);
 
                 // Compute the pixel spread value

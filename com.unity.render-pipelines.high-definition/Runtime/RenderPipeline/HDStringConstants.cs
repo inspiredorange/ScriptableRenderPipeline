@@ -480,9 +480,8 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
         public static readonly int _PixelSpreadAngle                = Shader.PropertyToID("_PixelSpreadAngle");
         public static readonly int _RaytracingFlagMask              = Shader.PropertyToID("_RaytracingFlagMask");
         public static readonly string _RaytracingAccelerationStructureName           = "_RaytracingAccelerationStructure";
-        // TODO if debug rt
         public static readonly int _RayCountTexture                 = Shader.PropertyToID("_RayCountTexture");
-        // endif
+        public static readonly int _RayCountEnabled                 = Shader.PropertyToID("_RayCountEnabled");
 #else
         public static readonly int _RaytracedAreaShadow             = Shader.PropertyToID("_RaytracedAreaShadow");
 #endif

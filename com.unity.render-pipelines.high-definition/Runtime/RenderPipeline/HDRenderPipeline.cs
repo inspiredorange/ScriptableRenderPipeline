@@ -1330,10 +1330,6 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
 
             cmd.SetGlobalInt(HDShaderIDs._RaytracedAreaShadow, 0);
 
-#if ENABLE_RAYTRACING
-            m_RayTracingManager.rayCountManager.ClearRayCount(cmd, hdCamera);
-#endif
-
             // If we render a reflection view or a preview we should not display any debug information
             // This need to be call before ApplyDebugDisplaySettings()
             if (camera.cameraType == CameraType.Reflection || camera.cameraType == CameraType.Preview)
@@ -1351,6 +1347,11 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
 
                 m_CurrentDebugDisplaySettings = m_DebugDisplaySettings;
             }
+
+#if ENABLE_RAYTRACING
+            // Must update after getting DebugDisplaySettings
+            m_RayTracingManager.rayCountManager.Update(cmd, hdCamera, m_CurrentDebugDisplaySettings.data.countRays);
+#endif
 
             m_DbufferManager.enableDecals = false;
             if (hdCamera.frameSettings.IsEnabled(FrameSettingsField.Decals))
@@ -2988,8 +2989,7 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
                 }
 
 #if ENABLE_RAYTRACING
-                if (m_CurrentDebugDisplaySettings.data.countRays)
-                    m_RayTracingManager.rayCountManager.RenderRayCount(cmd, hdCamera, m_CameraColorBuffer, m_CurrentDebugDisplaySettings.data.rayCountFontColor);
+                m_RayTracingManager.rayCountManager.RenderRayCount(cmd, hdCamera, m_CameraColorBuffer, m_CurrentDebugDisplaySettings.data.rayCountFontColor);
 #endif
 
                 m_LightLoop.RenderDebugOverlay(hdCamera, cmd, m_CurrentDebugDisplaySettings, ref x, ref y, overlaySize, hdCamera.actualWidth, cullResults);

@@ -24,7 +24,10 @@ Texture2D<float>						_DepthTexture;
 RWTexture2D<float4> 					_AmbientOcclusionTextureRW;
 RWTexture2D<float> 						_RaytracingHitDistanceTexture;
 RWTexture2D<float4> 					_RaytracingVSNormalTexture;
-RWTexture2D<uint4>                      _RayCountTexture;
+
+// Raycount
+uint                _RayCountEnabled;
+RWTexture2D<uint4>  _RayCountTexture;
 
 [shader("miss")]
 void MissShaderAmbientOcclusion(inout RayIntersection rayIntersection : SV_RayPayload)
@@ -70,9 +73,10 @@ void RayGenAmbientOcclusion()
 	// the number of samples based on the roughness
 	int numSamples = _RaytracingNumSamples;
 
-    // TODO ifdef debug or something like that
-    _RayCountTexture[currentPixelCoord].x = _RayCountTexture[currentPixelCoord].x + (uint)numSamples;
-    // endif
+    if (_RayCountEnabled > 0)
+    {
+        _RayCountTexture[currentPixelCoord].x = _RayCountTexture[currentPixelCoord].x + (uint)numSamples;
+    }
 
 	// Variable that accumulate the radiance
 	float3 completeColor = float3(0.0, 0.0, 0.0);
