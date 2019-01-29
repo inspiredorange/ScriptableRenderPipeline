@@ -3,7 +3,9 @@ Shader "Hidden/HDRP/DebugViewRayCount"
     Properties
     {
         _CameraColorTexture("_CameraColorTexture", 2D) = "white" {}
-        _MegaRaysPerFrameTexture("_MegaRaysPerFrameTexture", 2D) = "black" {}
+		_TotalAORaysTex("_TotalAORaysTex", 2D) = "black" {}
+		_TotalReflectionRaysTex("_TotalReflectionRaysTex", 2D) = "black" {}
+		_TotalAreaShadowRaysTex("_TotalAreaShadowRaysTex", 2D) = "black" {}
         _FontColor("_FontColor", Color) = (1,1,1,1)
     }
     SubShader
@@ -36,7 +38,9 @@ Shader "Hidden/HDRP/DebugViewRayCount"
             //-------------------------------------------------------------------------------------
 
             //uint _NumMegaRays;
-            TEXTURE2D(_MegaRaysPerFrameTexture);
+            Texture2D<uint> _TotalAORaysTex;
+            Texture2D<uint> _TotalReflectionRaysTex;
+			Texture2D<uint> _TotalAreaShadowRaysTex;
             TEXTURE2D(_CameraColorTexture);
             float4 _FontColor;
 
@@ -80,7 +84,12 @@ Shader "Hidden/HDRP/DebugViewRayCount"
                 {
                     displayTextOffsetY = -DEBUG_FONT_TEXT_HEIGHT;
                 }
-                // AO MRays/Frame
+                // Get MRays/frame
+				float aoMRays = (float)_TotalAORaysTex[uint2(0, 0)].x / (1000.0f * 1000.0f);
+				float reflectionMRays = (float)_TotalReflectionRaysTex[uint2(0, 0)].x / (1000.0f * 1000.0f);
+				float areaShadowMRays = (float)_TotalAreaShadowRaysTex[uint2(0, 0)].x / (1000.0f * 1000.0f);
+				float totalMRays = aoMRays + reflectionMRays + areaShadowMRays;
+
                 uint2 displayUnormCoord = uint2(displayTextOffsetX, abs(displayTextOffsetY) * 4);
                 uint2 unormCoord = input.positionCS.xy;
                 float3 fontColor = _FontColor.rgb;
@@ -89,7 +98,7 @@ Shader "Hidden/HDRP/DebugViewRayCount"
                 DrawCharacter('A', fontColor, unormCoord, displayUnormCoord, flipY, result.rgb);
                 DrawCharacter('O', fontColor, unormCoord, displayUnormCoord, flipY, result.rgb);
                 DrawCharacter(':', fontColor, unormCoord, displayUnormCoord, flipY, result.rgb);
-                DrawFloat(_MegaRaysPerFrameTexture[uint2(0, 0)].x, fontColor, unormCoord, displayUnormCoord, flipY, result.rgb);
+                DrawFloat(aoMRays, fontColor, unormCoord, displayUnormCoord, flipY, result.rgb);
                 DrawCharacter('M', fontColor, unormCoord, displayUnormCoord, flipY, result.rgb);
                 DrawCharacter('R', fontColor, unormCoord, displayUnormCoord, flipY, result.rgb);
                 DrawCharacter('a', fontColor, unormCoord, displayUnormCoord, flipY, result.rgb);
@@ -114,7 +123,7 @@ Shader "Hidden/HDRP/DebugViewRayCount"
                 DrawCharacter('o', fontColor, unormCoord, displayUnormCoord, flipY, result.rgb);
                 DrawCharacter('n', fontColor, unormCoord, displayUnormCoord, flipY, result.rgb);
                 DrawCharacter(':', fontColor, unormCoord, displayUnormCoord, flipY, result.rgb);
-                DrawFloat(_MegaRaysPerFrameTexture[uint2(0, 0)].y, fontColor, unormCoord, displayUnormCoord, flipY, result.rgb);
+                DrawFloat(reflectionMRays, fontColor, unormCoord, displayUnormCoord, flipY, result.rgb);
                 DrawCharacter('M', fontColor, unormCoord, displayUnormCoord, flipY, result.rgb);
                 DrawCharacter('R', fontColor, unormCoord, displayUnormCoord, flipY, result.rgb);
                 DrawCharacter('a', fontColor, unormCoord, displayUnormCoord, flipY, result.rgb);
@@ -139,7 +148,7 @@ Shader "Hidden/HDRP/DebugViewRayCount"
                 DrawCharacter('o', fontColor, unormCoord, displayUnormCoord, flipY, result.rgb);
                 DrawCharacter('w', fontColor, unormCoord, displayUnormCoord, flipY, result.rgb);
                 DrawCharacter(':', fontColor, unormCoord, displayUnormCoord, flipY, result.rgb);
-                DrawFloat(_MegaRaysPerFrameTexture[uint2(0, 0)].z, fontColor, unormCoord, displayUnormCoord, flipY, result.rgb);
+                DrawFloat(areaShadowMRays, fontColor, unormCoord, displayUnormCoord, flipY, result.rgb);
                 DrawCharacter('M', fontColor, unormCoord, displayUnormCoord, flipY, result.rgb);
                 DrawCharacter('R', fontColor, unormCoord, displayUnormCoord, flipY, result.rgb);
                 DrawCharacter('a', fontColor, unormCoord, displayUnormCoord, flipY, result.rgb);
@@ -159,7 +168,7 @@ Shader "Hidden/HDRP/DebugViewRayCount"
                 DrawCharacter('a', fontColor, unormCoord, displayUnormCoord, flipY, result.rgb);
                 DrawCharacter('l', fontColor, unormCoord, displayUnormCoord, flipY, result.rgb);
                 DrawCharacter(':', fontColor, unormCoord, displayUnormCoord, flipY, result.rgb);
-                DrawFloat(_MegaRaysPerFrameTexture[uint2(0, 0)].w, fontColor, unormCoord, displayUnormCoord, flipY, result.rgb);
+                DrawFloat(totalMRays, fontColor, unormCoord, displayUnormCoord, flipY, result.rgb);
                 DrawCharacter('M', fontColor, unormCoord, displayUnormCoord, flipY, result.rgb);
                 DrawCharacter('R', fontColor, unormCoord, displayUnormCoord, flipY, result.rgb);
                 DrawCharacter('a', fontColor, unormCoord, displayUnormCoord, flipY, result.rgb);
