@@ -118,9 +118,9 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
             x += overlayWidth;
             s_OverlayLineHeight = Mathf.Max(overlayHeight, s_OverlayLineHeight);
             // Go to next line if it goes outside the screen.
-            if ( (x + overlayWidth - hdCamera.viewport.x) > hdCamera.actualWidth)
+            if ( (x + overlayWidth) > hdCamera.actualWidth)
             {
-                x = hdCamera.viewport.x;
+                x = 0.0f;
                 y -= s_OverlayLineHeight;
                 s_OverlayLineHeight = -1.0f;
             }
@@ -317,7 +317,7 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
         }
 
         // This particular case is for blitting a camera-scaled texture into a non scaling texture. So we setup the full viewport (implicit in cmd.Blit) but have to scale the input UVs.
-        public static void BlitCameraTexture(CommandBuffer cmd, HDCamera camera, RTHandleSystem.RTHandle source, RenderTargetIdentifier destination, bool flip)
+        public static void BlitFinalCameraTexture(CommandBuffer cmd, HDCamera camera, RTHandleSystem.RTHandle source, RenderTargetIdentifier destination, bool flip = false)
         {
             var scaleBias = new Vector4(camera.viewportScale.x, camera.viewportScale.y, 0.0f, 0.0f);
             var offset = Vector2.zero;
@@ -334,29 +334,14 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
             DrawFullScreen(cmd, camera.viewport, GetBlitMaterial(), destination, s_PropertyBlock, 0);
         }
 
-        // This particular case is for blitting a non-scaled texture into a scaled texture. So we setup the partial viewport but don't scale the input UVs.
-        public static void BlitCameraTexture(CommandBuffer cmd, HDCamera camera, RenderTargetIdentifier source, RTHandleSystem.RTHandle destination)
-        {
-            // Will set the correct camera viewport as well.
-            SetRenderTarget(cmd, camera, destination);
-
-            cmd.SetGlobalTexture(HDShaderIDs._BlitTexture, source);
-            cmd.SetGlobalVector(HDShaderIDs._BlitScaleBias, new Vector4(1.0f, 1.0f, 0.0f, 0.0f));
-            cmd.SetGlobalFloat(HDShaderIDs._BlitMipLevel, 0.0f);
-            // Wanted to make things clean and not use SetGlobalXXX APIs but can't use MaterialPropertyBlock with RenderTargetIdentifier so YEY
-            //s_PropertyBlock.SetTexture(HDShaderIDs._BlitTexture, source);
-            //s_PropertyBlock.SetVector(HDShaderIDs._BlitScaleBias, camera.scaleBias);
-            cmd.DrawProcedural(Matrix4x4.identity, GetBlitMaterial(), 0, MeshTopology.Triangles, 3, 1);
-        }
-
-        public static void BlitCameraTextureStereoDoubleWide(CommandBuffer cmd, RTHandleSystem.RTHandle source)
+        public static void BlitCameraTextureStereoDoubleWide(CommandBuffer cmd, RTHandleSystem.RTHandle source, RenderTargetIdentifier destination)
         {
             var mat = GetBlitMaterial();
             mat.SetTexture(HDShaderIDs._BlitTexture, source);
             mat.SetFloat(HDShaderIDs._BlitMipLevel, 0f);
             mat.SetVector(HDShaderIDs._BlitScaleBiasRt, new Vector4(1f, 1f, 0f, 0f));
             mat.SetVector(HDShaderIDs._BlitScaleBias, new Vector4(1f, 1f, 0f, 0f));
-            cmd.Blit(source, BuiltinRenderTextureType.CameraTarget, mat, 1);
+            cmd.Blit(source, destination, mat, 1);
         }
 
         // These method should be used to render full screen triangles sampling auto-scaling RTs.
@@ -575,7 +560,7 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
                     buildTarget == UnityEditor.BuildTarget.PS4 ||
                     buildTarget == UnityEditor.BuildTarget.Switch);
         }
-        
+
         public static bool AreGraphicsAPIsSupported(UnityEditor.BuildTarget target, out GraphicsDeviceType unsupportedGraphicDevice)
         {
             unsupportedGraphicDevice = GraphicsDeviceType.Null;
