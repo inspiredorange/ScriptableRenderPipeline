@@ -1342,7 +1342,7 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
 
             // -----------------------------------------------------------------------------
             // Blur kernel
-            using (new ProfilingSample(cmd, "Motion Blur", CustomSamplerId.MotionBlurKernel.GetSampler()))
+            using (new ProfilingSample(cmd, "Blur Kernel", CustomSamplerId.MotionBlurKernel.GetSampler()))
             {
                 cs = m_Resources.shaders.motionBlurCS;
                 kernel = cs.FindKernel("MotionBlurCS");
