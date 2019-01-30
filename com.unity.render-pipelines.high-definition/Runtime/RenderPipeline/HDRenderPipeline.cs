@@ -458,6 +458,7 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
 
             RTHandles.Release(m_DebugColorPickerBuffer);
             RTHandles.Release(m_DebugFullScreenTempBuffer);
+            RTHandles.Release(m_IntermediateAfterPostProcessBuffer);
 
             RTHandles.Release(m_CameraColorMSAABuffer);
             RTHandles.Release(m_CameraSssDiffuseLightingMSAABuffer);
