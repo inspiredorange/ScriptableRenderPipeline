@@ -8,22 +8,22 @@ Shader "Hidden/HDRP/DebugViewRayCount"
 		_TotalAreaShadowRaysTex("_TotalAreaShadowRaysTex", 2D) = "black" {}
         _FontColor("_FontColor", Color) = (1,1,1,1)
     }
-    SubShader
-    {
-        Tags{ "RenderPipeline" = "HDRenderPipeline" }
-        Pass
+        SubShader
         {
-            ZWrite Off
-            Cull Off
-            ZTest Always
-            Blend SrcAlpha OneMinusSrcAlpha
+            Tags{ "RenderPipeline" = "HDRenderPipeline" }
+            Pass
+            {
+                ZWrite Off
+                Cull Off
+                ZTest Always
+                Blend SrcAlpha OneMinusSrcAlpha
 
-            HLSLPROGRAM
-            #pragma target 4.5
-            #pragma only_renderers d3d11 ps4 xboxone vulkan metal switch
+                HLSLPROGRAM
+                #pragma target 4.5
+                #pragma only_renderers d3d11 ps4 xboxone vulkan metal switch
 
-            #pragma vertex Vert
-            #pragma fragment Frag
+                #pragma vertex Vert
+                #pragma fragment Frag
 
             //-------------------------------------------------------------------------------------
             // Include
@@ -32,15 +32,12 @@ Shader "Hidden/HDRP/DebugViewRayCount"
             #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/Common.hlsl"
             #include "Packages/com.unity.render-pipelines.high-definition/Runtime/ShaderLibrary/ShaderVariables.hlsl"
             #include "Packages/com.unity.render-pipelines.high-definition/Runtime/Debug/DebugDisplay.hlsl"
-        
+
             //-------------------------------------------------------------------------------------
             // variable declaration
             //-------------------------------------------------------------------------------------
 
-            //uint _NumMegaRays;
-            Texture2D<uint> _TotalAORaysTex;
-            Texture2D<uint> _TotalReflectionRaysTex;
-			Texture2D<uint> _TotalAreaShadowRaysTex;
+            StructuredBuffer<uint> _TotalRayCountBuffer;
             TEXTURE2D(_CameraColorTexture);
             float4 _FontColor;
 
@@ -85,9 +82,9 @@ Shader "Hidden/HDRP/DebugViewRayCount"
                     displayTextOffsetY = -DEBUG_FONT_TEXT_HEIGHT;
                 }
                 // Get MRays/frame
-				float aoMRays = (float)_TotalAORaysTex[uint2(0, 0)].x / (1000.0f * 1000.0f);
-				float reflectionMRays = (float)_TotalReflectionRaysTex[uint2(0, 0)].x / (1000.0f * 1000.0f);
-				float areaShadowMRays = (float)_TotalAreaShadowRaysTex[uint2(0, 0)].x / (1000.0f * 1000.0f);
+                float aoMRays = (float)_TotalRayCountBuffer[0] / (1000.0f * 1000.0f);
+                float reflectionMRays = (float)_TotalRayCountBuffer[1] / (1000.0f * 1000.0f);
+                float areaShadowMRays = (float)_TotalRayCountBuffer[2] / (1000.0f * 1000.0f);
 				float totalMRays = aoMRays + reflectionMRays + areaShadowMRays;
 
                 uint2 displayUnormCoord = uint2(displayTextOffsetX, abs(displayTextOffsetY) * 4);

@@ -1,17 +1,22 @@
 #pragma kernel CS_CountRays
+#pragma kernel CS_Clear
 
 #pragma only_renderers d3d11
 
 RWTexture2D<uint4> _RayCountTexture;
-// Interlocked add can only operate on scalar values,
-// so allocate separate uint textures.
-RWTexture2D<uint> _TotalAORaysTex;
-RWTexture2D<uint> _TotalReflectionRaysTex;
-RWTexture2D<uint> _TotalAreaShadowRaysTex;
+RWStructuredBuffer<uint> _TotalRayCountBuffer;
 
 groupshared uint aoRayCountPerThreadGroup;
 groupshared uint reflectionRayCountPerThreadGroup;
 groupshared uint areaShadowRayCountPerThreadGroup;
+
+[numthreads(1,1,1)]
+void CS_Clear(uint3 globalID : SV_DispatchThreadID)
+{
+    _TotalRayCountBuffer[0] = 0;
+    _TotalRayCountBuffer[1] = 0;
+    _TotalRayCountBuffer[2] = 0;
+}
 
 [numthreads(8,8,1)]
 void CS_CountRays(uint3 globalId : SV_DispatchThreadID, uint3 localId : SV_GroupThreadID)
@@ -41,8 +46,8 @@ void CS_CountRays(uint3 globalId : SV_DispatchThreadID, uint3 localId : SV_Group
 		
     if (localId.x == 0 && localId.y == 0)
     {
-        InterlockedAdd(_TotalAORaysTex[uint2(0, 0)].x, aoRayCountPerThreadGroup);
-        InterlockedAdd(_TotalReflectionRaysTex[uint2(0, 0)].x, reflectionRayCountPerThreadGroup);
-        InterlockedAdd(_TotalAreaShadowRaysTex[uint2(0, 0)].x, areaShadowRayCountPerThreadGroup);
+        InterlockedAdd(_TotalRayCountBuffer[0], aoRayCountPerThreadGroup);
+        InterlockedAdd(_TotalRayCountBuffer[1], reflectionRayCountPerThreadGroup);
+        InterlockedAdd(_TotalRayCountBuffer[2], areaShadowRayCountPerThreadGroup);
     }
 }
