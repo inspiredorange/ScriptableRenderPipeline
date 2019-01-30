@@ -134,7 +134,7 @@ void TileGenPass(uint3 id : SV_DispatchThreadID, uint gid : SV_GroupIndex, uint2
 // TODO: Consider a conservative line rasterization if bugs arise.
 
 // Line drawing algorithms.
-#if 1
+#if 0
 void Bresenham(int2 center, float2 lineToDraw, uint centerInfo)
 {
     int2 maxCoords = int2(_TileTargetSize.xy - 1);
@@ -259,6 +259,7 @@ void TileNeighbourhood(uint3 dispatchID : SV_DispatchThreadID, uint gid : SV_Gro
     _TileToScatterMin[id] = minVel;
 }
 #else
+RW_TEXTURE2D(float3, _TileMaxNeighbourhood);
 
 [numthreads(8, 8, 1)]
 void TileNeighbourhood(uint3 dispatchID : SV_DispatchThreadID, uint gid : SV_GroupIndex, uint2 groupThreadId : SV_GroupThreadID, uint3 groupID : SV_GroupID)
