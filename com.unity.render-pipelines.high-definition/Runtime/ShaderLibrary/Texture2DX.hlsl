@@ -42,8 +42,10 @@
         #define SLICE_ARRAY_INDEX  0
     #endif
 
-    #define TEXTURE2DX(textureName)                                         TEXTURE2D_ARRAY(textureName)
-    #define TEXTURE2DX_FLOAT(textureName)                                   TEXTURE2D_ARRAY_FLOAT(textureName)
+    #define TEXTURE2DX                                                      TEXTURE2D_ARRAY
+    #define TEXTURE2DX_PARAM                                                TEXTURE2D_ARRAY_PARAM
+    #define TEXTURE2DX_ARGS                                                 TEXTURE2D_ARRAY_ARGS
+    #define TEXTURE2DX_FLOAT                                                TEXTURE2D_ARRAY_FLOAT
     #define TEXTURE2DX_MSAA(type, textureName)                              Texture2DMSArray<type> textureName
 
     #define RW_TEXTURE2DX(type, textureName)                                RW_TEXTURE2D_ARRAY(type, textureName)
@@ -58,6 +60,8 @@
     #define GATHER_GREEN_TEXTURE2DX(textureName, samplerName, coord2)       GATHER_GREEN_TEXTURE2D(textureName, samplerName, float3(coord2, SLICE_ARRAY_INDEX))
 #else
     #define TEXTURE2DX                                                      TEXTURE2D
+    #define TEXTURE2DX_PARAM                                                TEXTURE2D_PARAM
+    #define TEXTURE2DX_ARGS                                                 TEXTURE2D_ARGS
     #define TEXTURE2DX_FLOAT                                                TEXTURE2D_FLOAT
     #define TEXTURE2DX_MSAA(type, textureName)                              Texture2DMS<type> textureName
 

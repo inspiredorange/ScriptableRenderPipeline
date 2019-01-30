@@ -305,12 +305,14 @@ float BilateralUpsample(float HiDepth, float HiAO, float4 LowDepths, float4 LowA
 }
 
 [numthreads(8, 8, 1)]
-void MAIN(uint GI : SV_GroupIndex, uint2 GTid : SV_GroupThreadID, uint2 DTid : SV_DispatchThreadID)
+void MAIN(uint GI : SV_GroupIndex, uint2 GTid : SV_GroupThreadID, uint3 DTid : SV_DispatchThreadID)
 {
+    UNITY_STEREO_ASSIGN_COMPUTE_EYE_INDEX(DTid.z);
+
     //
     // Load 4 pixels per thread into LDS to fill the 16x16 LDS cache with depth and AO
     //
-    PrefetchData(GTid.x << 1 | GTid.y << 5, int2(DTid + GTid - 2) * _InvLowResolution.xy);
+    PrefetchData(GTid.x << 1 | GTid.y << 5, int2(DTid.xy + GTid - 2) * _InvLowResolution.xy);
     GroupMemoryBarrierWithGroupSync();
 
     // Goal:  End up with a 9x9 patch that is blurred so we can upsample.  Blur radius is 2 pixels, so start with 13x13 area.
@@ -342,8 +344,8 @@ void MAIN(uint GI : SV_GroupIndex, uint2 GTid : SV_GroupThreadID, uint2 DTid : S
 #endif
 
     // We work on a quad of pixels at once because then we can gather 4 each of high and low-res depth values
-    float2 UV0 = DTid * _InvLowResolution.xy;
-    float2 UV1 = DTid * 2 * _InvHighResolution.xy;
+    float2 UV0 = DTid.xy * _InvLowResolution.xy;
+    float2 UV1 = DTid.xy * 2 * _InvHighResolution.xy;
 
 #ifdef MSAA
     #ifdef BLEND_WITH_HIGHER_RESOLUTION
@@ -380,7 +382,7 @@ void MAIN(uint GI : SV_GroupIndex, uint2 GTid : SV_GroupThreadID, uint2 DTid : S
         float4 LoDepths = GATHER_TEXTURE2DX(_LoResDB, sampler_LoResDB, UV0);
         float4 HiDepths = GATHER_TEXTURE2DX(_HiResDB, sampler_HiResDB, UV1);
 
-        int2 OutST = DTid << 1;
+        int2 OutST = DTid.xy << 1;
 
     #ifdef INVERT
         _AoResult[COORD_TEXTURE2DX(OutST + int2(-1,  0))] = 1.0 - BilateralUpsample(HiDepths.x, HiSSAOs.x, LoDepths.xyzw, LoSSAOs.xyzw);

@@ -106,9 +106,10 @@ float3 ParallelReduction(uint gid, uint threadIdx, float2 velocity)
 [numthreads(TILE_SIZE, TILE_SIZE,1)]
 void TileGenPass(uint3 id : SV_DispatchThreadID, uint gid : SV_GroupIndex, uint2 groupThreadId : SV_GroupThreadID, uint3 groupID: SV_GroupID)
 {
+    UNITY_STEREO_ASSIGN_COMPUTE_EYE_INDEX(id.z);
     uint threadIdx = groupThreadId.y * TILE_SIZE + groupThreadId.x;
 
-    float2 velocity = LOAD_TEXTURE2D(_VelocityAndDepth, id.xy).xy;
+    float2 velocity = LOAD_TEXTURE2DX(_VelocityAndDepth, id.xy).xy;
 
     float3 minMaxVel = ParallelReduction(gid, threadIdx, velocity);
     float minVelLength = minMaxVel.x;
@@ -116,7 +117,7 @@ void TileGenPass(uint3 id : SV_DispatchThreadID, uint gid : SV_GroupIndex, uint2
 
     if (threadIdx == 0)
     {
-        _TileMinMaxVel[groupID.xy] = float3(maxVel.x, maxVel.y, minVelLength);
+        _TileMinMaxVel[COORD_TEXTURE2DX(groupID.xy)] = float3(maxVel.x, maxVel.y, minVelLength);
     }
 
 }
@@ -126,22 +127,23 @@ void TileGenPass(uint3 id : SV_DispatchThreadID, uint gid : SV_GroupIndex, uint2
 [numthreads(8, 8, 1)]
 void TileNeighbourhood(uint3 dispatchID : SV_DispatchThreadID, uint gid : SV_GroupIndex, uint2 groupThreadId : SV_GroupThreadID, uint3 groupID : SV_GroupID)
 {
+    UNITY_STEREO_ASSIGN_COMPUTE_EYE_INDEX(dispatchID.z);
     int2 id = dispatchID.xy;
     int2 maxCoords = int2(_TileTargetSize.xy - 1);
 
-    float3 centralSample = _TileMinMaxVel[id.xy + uint2(0, 0)].xyz;
+    float3 centralSample = _TileMinMaxVel[COORD_TEXTURE2DX(id.xy + uint2(0, 0))].xyz;
     
-    float3 v0 = _TileMinMaxVel[clamp(id.xy + int2(-1,  1), int2(0, 0), maxCoords)].xyz;
-    float3 v1 = _TileMinMaxVel[clamp(id.xy + int2( 0,  1), int2(0, 0), maxCoords)].xyz;
-    float3 v2 = _TileMinMaxVel[clamp(id.xy + int2( 1,  1), int2(0, 0), maxCoords)].xyz;
+    float3 v0 = _TileMinMaxVel[COORD_TEXTURE2DX(clamp(id.xy + int2(-1,  1), int2(0, 0), maxCoords))].xyz;
+    float3 v1 = _TileMinMaxVel[COORD_TEXTURE2DX(clamp(id.xy + int2( 0,  1), int2(0, 0), maxCoords))].xyz;
+    float3 v2 = _TileMinMaxVel[COORD_TEXTURE2DX(clamp(id.xy + int2( 1,  1), int2(0, 0), maxCoords))].xyz;
 
-    float3 v3 = _TileMinMaxVel[clamp(id.xy + int2(-1,  0), int2(0, 0), maxCoords)].xyz;
+    float3 v3 = _TileMinMaxVel[COORD_TEXTURE2DX(clamp(id.xy + int2(-1,  0), int2(0, 0), maxCoords))].xyz;
     float3 v4 = centralSample.xyz;
-    float3 v5 = _TileMinMaxVel[clamp(id.xy + int2( 1,  0), int2(0, 0), maxCoords)].xyz;
+    float3 v5 = _TileMinMaxVel[COORD_TEXTURE2DX(clamp(id.xy + int2( 1,  0), int2(0, 0), maxCoords))].xyz;
 
-    float3 v6 = _TileMinMaxVel[clamp(id.xy + int2(-1,  -1), int2(0, 0), maxCoords)].xyz;
-    float3 v7 = _TileMinMaxVel[clamp(id.xy + int2( 0,  -1), int2(0, 0), maxCoords)].xyz;
-    float3 v8 = _TileMinMaxVel[clamp(id.xy + int2( 1,  -1), int2(0, 0), maxCoords)].xyz;
+    float3 v6 = _TileMinMaxVel[COORD_TEXTURE2DX(clamp(id.xy + int2(-1,  -1), int2(0, 0), maxCoords))].xyz;
+    float3 v7 = _TileMinMaxVel[COORD_TEXTURE2DX(clamp(id.xy + int2( 0,  -1), int2(0, 0), maxCoords))].xyz;
+    float3 v8 = _TileMinMaxVel[COORD_TEXTURE2DX(clamp(id.xy + int2( 1,  -1), int2(0, 0), maxCoords))].xyz;
 
 
     float2 maxVel0 = MaxVel(v0.xy, MaxVel(v1.xy, v2.xy));
@@ -153,7 +155,7 @@ void TileNeighbourhood(uint3 dispatchID : SV_DispatchThreadID, uint gid : SV_Gro
     float minVel2 = Min3(v6.z, v7.z, v8.z);
 
 
-    _TileMaxNeighbourhood[id.xy] = float3(MaxVel(maxVel0, MaxVel(maxVel1, maxVel2)), Min3(minVel0, minVel1, minVel2)) ;
+    _TileMaxNeighbourhood[COORD_TEXTURE2DX(id.xy)] = float3(MaxVel(maxVel0, MaxVel(maxVel1, maxVel2)), Min3(minVel0, minVel1, minVel2)) ;
 }
 
 #endif

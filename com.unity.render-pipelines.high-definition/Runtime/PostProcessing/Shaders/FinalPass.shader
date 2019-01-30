@@ -22,7 +22,7 @@ Shader "Hidden/HDRP/FinalPass"
         #define FXAA_REDUCE_MUL     (1.0 / 8.0)
         #define FXAA_REDUCE_MIN     (1.0 / 128.0)
 
-        TEXTURE2D(_InputTexture);
+        TEXTURE2DX(_InputTexture);
         TEXTURE2D(_GrainTexture);
         TEXTURE2D_ARRAY(_BlueNoiseTexture);
 
@@ -37,17 +37,21 @@ Shader "Hidden/HDRP/FinalPass"
         struct Attributes
         {
             uint vertexID : SV_VertexID;
+            UNITY_VERTEX_INPUT_INSTANCE_ID
         };
 
         struct Varyings
         {
             float4 positionCS : SV_POSITION;
             float2 texcoord   : TEXCOORD0;
+            UNITY_VERTEX_OUTPUT_STEREO
         };
 
         Varyings Vert(Attributes input)
         {
             Varyings output;
+            UNITY_SETUP_INSTANCE_ID(input);
+            UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(output);
             output.positionCS = GetFullScreenTriangleVertexPosition(input.vertexID);
             output.texcoord = GetFullScreenTriangleTexCoord(input.vertexID);
             return output;
@@ -72,11 +76,13 @@ Shader "Hidden/HDRP/FinalPass"
 
         float3 Load(int2 icoords, int idx, int idy)
         {
-            return LOAD_TEXTURE2D(_InputTexture, min(icoords + int2(idx, idy), _ScreenSize.xy - 1.0)).xyz;
+            return LOAD_TEXTURE2DX(_InputTexture, min(icoords + int2(idx, idy), _ScreenSize.xy - 1.0)).xyz;
         }
 
         float3 GetColor(Varyings input, out uint2 positionSS)
         {
+            UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(input);
+
             float2 positionNDC = input.texcoord;
             positionSS = input.texcoord * _ScreenSize.xy;
 

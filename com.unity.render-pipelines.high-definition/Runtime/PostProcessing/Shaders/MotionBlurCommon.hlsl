@@ -6,21 +6,21 @@
 #define WAVE_SIZE                   64u
 
 #ifdef VELOCITY_PREPPING 
-RW_TEXTURE2D(float3, _VelocityAndDepth);
+RW_TEXTURE2DX(float3, _VelocityAndDepth);
 #else
-TEXTURE2D(_VelocityAndDepth);
+TEXTURE2DX(_VelocityAndDepth);
 #endif
 
 #ifdef GEN_PASS
-RW_TEXTURE2D(float3, _TileMinMaxVel);
+RW_TEXTURE2DX(float3, _TileMinMaxVel);
 #else
-TEXTURE2D(_TileMinMaxVel);
+TEXTURE2DX(_TileMinMaxVel);
 #endif
 
 #if NEIGHBOURHOOD_PASS
-RW_TEXTURE2D(float3, _TileMaxNeighbourhood);
+RW_TEXTURE2DX(float3, _TileMaxNeighbourhood);
 #else
-TEXTURE2D(_TileMaxNeighbourhood);
+TEXTURE2DX(_TileMaxNeighbourhood);
 #endif
 
 

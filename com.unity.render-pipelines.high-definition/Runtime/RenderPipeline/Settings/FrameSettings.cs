@@ -317,18 +317,11 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
             sanitazedFrameSettings.bitDatas[(int)FrameSettingsField.ExposureControl] &= !reflection;
 
             // Planar and real time cubemap doesn't need post process and render in FP16
-            // XRTODO: re-enable once Single-Pass-Instancing is working
-            bool postprocess = sanitazedFrameSettings.bitDatas[(int)FrameSettingsField.Postprocess] &= !reflection && !preview && !stereo;
+            bool postprocess = sanitazedFrameSettings.bitDatas[(int)FrameSettingsField.Postprocess] &= !reflection && !preview;
 
             sanitazedFrameSettings.bitDatas[(int)FrameSettingsField.TransparentPrepass] &= renderPipelineSettings.supportTransparentDepthPrepass && !preview;
 
-            // XRTODO: The work will be implemented piecemeal to support all passes
-            // XRTODO: check why '=' and not '&=' and if we can merge these lines
-            bool motionVector;
-            if (stereo)
-                motionVector = sanitazedFrameSettings.bitDatas[(int)FrameSettingsField.MotionVectors] = postprocess && !msaa;
-            else
-                motionVector = sanitazedFrameSettings.bitDatas[(int)FrameSettingsField.MotionVectors] &= !reflection && renderPipelineSettings.supportMotionVectors && !preview;
+            bool motionVector = sanitazedFrameSettings.bitDatas[(int)FrameSettingsField.MotionVectors] &= !reflection && renderPipelineSettings.supportMotionVectors && !preview;
 
             // Object motion vector are disabled if motion vector are disabled
             sanitazedFrameSettings.bitDatas[(int)FrameSettingsField.ObjectMotionVectors] &= motionVector && !preview;
