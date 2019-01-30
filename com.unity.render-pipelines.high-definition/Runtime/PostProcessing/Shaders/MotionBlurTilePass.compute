@@ -148,7 +148,6 @@ void Bresenham(int2 center, float2 lineToDraw, uint centerInfo)
     int x = startPoint.x;
     int y = startPoint.y;
 
-
     for (int i = 0; i < 32; ++i)
     {
         if (x >= endPoint.x && y >= endPoint.y)
@@ -178,7 +177,6 @@ void DDA(int2 center, float2 lineToDraw, uint centerInfo)
     int2 startPoint = center;
     int2 endPoint = int2(ceil(startPoint.x + lineToDraw.x), ceil(startPoint.y + lineToDraw.y));
     endPoint = clamp(endPoint, int2(0, 0), maxCoords);
-
 
     bool permute = false;
     if (abs(lineToDraw.x) < abs(lineToDraw.y))
@@ -210,7 +208,6 @@ void DDA(int2 center, float2 lineToDraw, uint centerInfo)
 [numthreads(8, 8, 1)]
 void TileNeighbourhood(uint3 dispatchID : SV_DispatchThreadID, uint gid : SV_GroupIndex, uint2 groupThreadId : SV_GroupThreadID, uint3 groupID : SV_GroupID)
 {
-
     int2 id = dispatchID.xy;
     int2 maxCoords = int2(_TileTargetSize.xy - 1);
 
@@ -222,7 +219,6 @@ void TileNeighbourhood(uint3 dispatchID : SV_DispatchThreadID, uint gid : SV_Gro
 
     // Covert to a per pixel velocity.
     float2 maxVelVectorInTiles = DecodeVelocityFromPacked(VelData.xy) *  _TileTargetSize.xy * 0.5f;
-
 
     // If the central velocity is small, no need to spread it.
     if (VelocityLengthInPixelsFromEncoded(VelData) > 0.5f)
