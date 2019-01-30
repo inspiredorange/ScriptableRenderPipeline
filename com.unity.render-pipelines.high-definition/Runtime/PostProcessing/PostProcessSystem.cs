@@ -2005,10 +2005,14 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
                 backBufferRect.x = backBufferRect.y = 0;
             }
 
-            //if (afterPostProcessEnabled)
+            if (camera.frameSettings.IsEnabled(FrameSettingsField.AfterPostprocess))
             {
                 m_FinalPassMaterial.EnableKeyword("APPLY_AFTER_POST");
                 m_FinalPassMaterial.SetTexture(HDShaderIDs._AfterPostProcessTexture, afterPostProcessTexture);
+            }
+            else
+            {
+                m_FinalPassMaterial.SetTexture(HDShaderIDs._AfterPostProcessTexture, Texture2D.blackTexture);
             }
 
             // This assumes that for now, posts are always off when double wide is enabled

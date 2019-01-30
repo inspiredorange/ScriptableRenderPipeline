@@ -3108,6 +3108,9 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
 
         void RenderAfterPostProcess(CullingResults cullResults, HDCamera hdCamera, ScriptableRenderContext renderContext, CommandBuffer cmd)
         {
+            if (!hdCamera.frameSettings.IsEnabled(FrameSettingsField.AfterPostprocess))
+                return;
+
             using (new ProfilingSample(cmd, "After Post-process", CustomSamplerId.AfterPostProcessing.GetSampler()))
             {
                 // Here we share GBuffer albedo buffer since it's not needed anymore
