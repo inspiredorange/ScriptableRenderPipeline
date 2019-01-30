@@ -363,12 +363,13 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
             panel.children.Add(m_DebugMaterialItems);
         }
 
-        // For now we just rebuild the lighting panel if needed, but ultimately it could be done in a better way
         void RefreshDisplayStatsDebug<T>(DebugUI.Field<T> field, T value)
         {
             UnregisterDebugItems(k_PanelDisplayStats, m_DebugDisplayStatsItems);
             RegisterDisplayStatsDebug();
         }
+
+        // For now we just rebuild the lighting panel if needed, but ultimately it could be done in a better way
         void RefreshLightingDebug<T>(DebugUI.Field<T> field, T value)
         {
             UnregisterDebugItems(k_PanelLighting, m_DebugLightingItems);
