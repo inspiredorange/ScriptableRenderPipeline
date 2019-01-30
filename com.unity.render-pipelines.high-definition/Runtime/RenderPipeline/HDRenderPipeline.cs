@@ -1328,8 +1328,6 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
             var hdProbeCullingResults = renderRequest.cullingResults.hdProbeCullingResults;
             var target = renderRequest.target;
 
-            cmd.SetGlobalInt(HDShaderIDs._RaytracedAreaShadow, 0);
-
             // If we render a reflection view or a preview we should not display any debug information
             // This need to be call before ApplyDebugDisplaySettings()
             if (camera.cameraType == CameraType.Reflection || camera.cameraType == CameraType.Preview)
@@ -1563,6 +1561,10 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
                     if (areaShadowsRendered)
                     {
                         cmd.SetGlobalInt(HDShaderIDs._RaytracedAreaShadow, 1);
+                    }
+                    else
+                    {
+                        cmd.SetGlobalInt(HDShaderIDs._RaytracedAreaShadow, 0);
                     }
 #endif
 
