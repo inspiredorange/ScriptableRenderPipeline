@@ -21,6 +21,7 @@ Shader "Hidden/HDRP/FinalPass"
 
         TEXTURE2D(_InputTexture);
         TEXTURE2D(_GrainTexture);
+        TEXTURE2D(_AfterPostProcessTexture);
         TEXTURE2D_ARRAY(_BlueNoiseTexture);
 
         SAMPLER(sampler_LinearClamp);
@@ -128,6 +129,9 @@ Shader "Hidden/HDRP/FinalPass"
 
             // Apply AfterPostProcess target
             #if APPLY_AFTER_POST
+            float4 afterPostColor = SAMPLE_TEXTURE2D_LOD(_AfterPostProcessTexture, s_point_clamp_sampler, positionNDC.xy * _ScreenToTargetScale.xy, 0);
+            // After post objects are blended according to the method described here: https://developer.nvidia.com/gpugems/GPUGems3/gpugems3_ch23.html
+            outColor.xyz = afterPostColor.a * outColor.xyz + afterPostColor.xyz;
             #endif
 
             return float4(outColor, 1.0);

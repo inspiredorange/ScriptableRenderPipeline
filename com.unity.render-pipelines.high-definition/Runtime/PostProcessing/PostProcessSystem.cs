@@ -243,7 +243,7 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
             }
         }
 
-        public void Render(CommandBuffer cmd, HDCamera camera, BlueNoise blueNoise, RTHandle colorBuffer, RTHandle lightingBuffer, RenderTargetIdentifier finalRT, bool flipY)
+        public void Render(CommandBuffer cmd, HDCamera camera, BlueNoise blueNoise, RTHandle colorBuffer, RTHandle afterPostProcessTexture, RTHandle lightingBuffer, RenderTargetIdentifier finalRT, bool flipY)
         {
             HDDynamicResolutionHandler dynResHandler = HDDynamicResolutionHandler.instance;
 
@@ -410,7 +410,7 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
                 // Final pass
                 using (new ProfilingSample(cmd, "Final Pass", CustomSamplerId.FinalPost.GetSampler()))
                 {
-                    DoFinalPass(cmd, camera, blueNoise, source, finalRT, flipY);
+                    DoFinalPass(cmd, camera, blueNoise, source, afterPostProcessTexture, finalRT, flipY);
                     PoolSource(ref source, null);
                 }
             }
@@ -1910,7 +1910,7 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
 
         #region Final Pass
 
-        void DoFinalPass(CommandBuffer cmd, HDCamera camera, BlueNoise blueNoise, RTHandle source, RenderTargetIdentifier destination, bool flipY)
+        void DoFinalPass(CommandBuffer cmd, HDCamera camera, BlueNoise blueNoise, RTHandle source, RTHandle afterPostProcessTexture, RenderTargetIdentifier destination, bool flipY)
         {
             bool postProcessEnabled = camera.frameSettings.IsEnabled(FrameSettingsField.Postprocess);
 
@@ -2003,6 +2003,12 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
             if (!flipY)
             {
                 backBufferRect.x = backBufferRect.y = 0;
+            }
+
+            //if (afterPostProcessEnabled)
+            {
+                m_FinalPassMaterial.EnableKeyword("APPLY_AFTER_POST");
+                m_FinalPassMaterial.SetTexture(HDShaderIDs._AfterPostProcessTexture, afterPostProcessTexture);
             }
 
             // This assumes that for now, posts are always off when double wide is enabled

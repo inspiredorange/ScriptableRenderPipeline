@@ -204,7 +204,8 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
         DebugDisplaySettings m_CurrentDebugDisplaySettings;
         RTHandleSystem.RTHandle         m_DebugColorPickerBuffer;
         RTHandleSystem.RTHandle         m_DebugFullScreenTempBuffer;
-        RTHandleSystem.RTHandle         m_AfterPostProcessBuffer;
+        // This target is only used in Dev builds as an intermediate destination for post process and where debug rendering will be done.
+        RTHandleSystem.RTHandle         m_IntermediateAfterPostProcessBuffer;
         bool                            m_FullScreenDebugPushed;
         bool                            m_ValidAPI; // False by default mean we render normally, true mean we don't render anything
         bool                            m_IsDepthBufferCopyValid;
@@ -428,7 +429,7 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
             {
                 m_DebugColorPickerBuffer = RTHandles.Alloc(Vector2.one, filterMode: FilterMode.Point, colorFormat: GraphicsFormat.R16G16B16A16_SFloat, useDynamicScale: true, name: "DebugColorPicker");
                 m_DebugFullScreenTempBuffer = RTHandles.Alloc(Vector2.one, filterMode: FilterMode.Point, colorFormat: GraphicsFormat.R16G16B16A16_SFloat, useDynamicScale: true, name: "DebugFullScreen");
-                m_AfterPostProcessBuffer = RTHandles.Alloc(Vector2.one, filterMode: FilterMode.Point, colorFormat: GraphicsFormat.R8G8B8A8_SRGB, useDynamicScale: true, name: "AfterPostProcess");
+                m_IntermediateAfterPostProcessBuffer = RTHandles.Alloc(Vector2.one, filterMode: FilterMode.Point, colorFormat: GraphicsFormat.R8G8B8A8_SRGB, useDynamicScale: true, name: "AfterPostProcess");
             }
 
             // Let's create the MSAA textures
@@ -772,6 +773,9 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
                     cmd.SetGlobalTexture(HDShaderIDs._SsrLightingTexture, m_SsrLightingTexture);
                 else
                     cmd.SetGlobalTexture(HDShaderIDs._SsrLightingTexture, HDUtils.clearTexture);
+
+                // Off screen rendering is disabled for most of the frame by default.
+                cmd.SetGlobalInt(HDShaderIDs._OffScreenRendering, 0);
             }
         }
 
@@ -1789,7 +1793,7 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
                 RenderDebug(hdCamera, cmd, cullingResults);
                 using (new ProfilingSample(cmd, "Final Blit (Dev Build Only)"))
                 {
-                    HDUtils.BlitFinalCameraTexture(cmd, hdCamera, m_AfterPostProcessBuffer, target.id, hdCamera.flipYMode == HDAdditionalCameraData.FlipYMode.ForceFlipY || hdCamera.isMainGameView);
+                    HDUtils.BlitFinalCameraTexture(cmd, hdCamera, m_IntermediateAfterPostProcessBuffer, target.id, hdCamera.flipYMode == HDAdditionalCameraData.FlipYMode.ForceFlipY || hdCamera.isMainGameView);
                 }
             }
 
@@ -2912,7 +2916,7 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
                 return;
 
             // Render Debug are only available in dev builds and we always render them in the same RT
-            HDUtils.SetRenderTarget(cmd, hdCamera, m_AfterPostProcessBuffer, m_SharedRTManager.GetDepthStencilBuffer());
+            HDUtils.SetRenderTarget(cmd, hdCamera, m_IntermediateAfterPostProcessBuffer, m_SharedRTManager.GetDepthStencilBuffer());
 
             using (new ProfilingSample(cmd, "Debug", CustomSamplerId.RenderDebug.GetSampler()))
             {
@@ -2927,8 +2931,8 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
                     m_DebugFullScreenPropertyBlock.SetBuffer(HDShaderIDs._DebugDepthPyramidOffsets, info.GetOffsetBufferData(m_DepthPyramidMipLevelOffsetsBuffer));
 
                     cmd.SetGlobalVector(HDShaderIDs._ScreenToTargetScale, hdCamera.doubleBufferedViewportScale);
-                    HDUtils.DrawFullScreen(cmd, hdCamera, m_DebugFullScreen, m_AfterPostProcessBuffer, m_DebugFullScreenPropertyBlock, 0);
-                    PushColorPickerDebugTexture(cmd, hdCamera, m_AfterPostProcessBuffer);
+                    HDUtils.DrawFullScreen(cmd, hdCamera, m_DebugFullScreen, m_IntermediateAfterPostProcessBuffer, m_DebugFullScreenPropertyBlock, 0);
+                    PushColorPickerDebugTexture(cmd, hdCamera, m_IntermediateAfterPostProcessBuffer);
                 }
 
                 // Then overlays
@@ -2951,7 +2955,7 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
                     HDUtils.NextOverlayCoord(ref x, ref y, overlaySize, overlaySize, hdCamera);
                 }
 
-                m_LightLoop.RenderDebugOverlay(hdCamera, cmd, m_CurrentDebugDisplaySettings, ref x, ref y, overlaySize, hdCamera.actualWidth, cullResults, m_AfterPostProcessBuffer);
+                m_LightLoop.RenderDebugOverlay(hdCamera, cmd, m_CurrentDebugDisplaySettings, ref x, ref y, overlaySize, hdCamera.actualWidth, cullResults, m_IntermediateAfterPostProcessBuffer);
 
                 DecalSystem.instance.RenderDebugOverlay(hdCamera, cmd, m_CurrentDebugDisplaySettings, ref x, ref y, overlaySize, hdCamera.actualWidth);
 
@@ -2978,7 +2982,7 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
                     // (i.e. we have perform a flip, we need to flip the input texture) + we need to handle the case were we debug a fullscreen pass that have already perform the flip
 
                     cmd.SetGlobalVector(HDShaderIDs._ScreenToTargetScale, hdCamera.doubleBufferedViewportScale);
-                    HDUtils.DrawFullScreen(cmd, hdCamera, m_DebugColorPicker, m_AfterPostProcessBuffer, m_DebugFullScreenPropertyBlock, 0);
+                    HDUtils.DrawFullScreen(cmd, hdCamera, m_DebugColorPicker, m_IntermediateAfterPostProcessBuffer, m_DebugFullScreenPropertyBlock, 0);
                 }
             }
         }
@@ -3073,7 +3077,7 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
             // Y-Flip needs to happen during the post process pass only if it's the final pass and is the regular game view
             // SceneView flip is handled by the editor internal code and GameView rendering into render textures should not be flipped in order to respect Unity texture coordinates convention
             bool flipInPostProcesses = postProcessIsFinalBlit && (hdCamera.flipYMode == HDAdditionalCameraData.FlipYMode.ForceFlipY || hdCamera.isMainGameView);
-            RenderTargetIdentifier destination = postProcessIsFinalBlit ? finalRT : m_AfterPostProcessBuffer;
+            RenderTargetIdentifier destination = postProcessIsFinalBlit ? finalRT : m_IntermediateAfterPostProcessBuffer;
 
             StartStereoRendering(cmd, renderContext, hdCamera.camera);
 
@@ -3086,6 +3090,7 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
                 camera: hdCamera,
                 blueNoise: m_BlueNoise,
                 colorBuffer: m_CameraColorBuffer,
+                afterPostProcessTexture: GetAfterPostProcessOffScreenBuffer(),
                 lightingBuffer: null,
                 finalRT: destination,
                 flipY: flipInPostProcesses
@@ -3095,16 +3100,24 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
         }
 
 
+        RTHandleSystem.RTHandle GetAfterPostProcessOffScreenBuffer()
+        {
+            return m_GbufferManager.GetBuffer(0);
+        }
+
+
         void RenderAfterPostProcess(CullingResults cullResults, HDCamera hdCamera, ScriptableRenderContext renderContext, CommandBuffer cmd)
         {
             using (new ProfilingSample(cmd, "After Post-process", CustomSamplerId.AfterPostProcessing.GetSampler()))
             {
                 // Here we share GBuffer albedo buffer since it's not needed anymore
-                HDUtils.SetRenderTarget(cmd, hdCamera, m_GbufferManager.GetBuffer(0), m_SharedRTManager.GetDepthStencilBuffer(), clearFlag: ClearFlag.Color, clearColor: Color.black);
+                HDUtils.SetRenderTarget(cmd, hdCamera, GetAfterPostProcessOffScreenBuffer(), m_SharedRTManager.GetDepthStencilBuffer(), clearFlag: ClearFlag.Color, clearColor: Color.black);
 
+                cmd.SetGlobalInt(HDShaderIDs._OffScreenRendering, 1);
                 RenderOpaqueRenderList(cullResults, hdCamera, renderContext, cmd, HDShaderPassNames.s_ForwardOnlyName, 0, HDRenderQueue.k_RenderQueue_AfterPostProcessOpaque);
                 // Setup off-screen transparency here
                 RenderTransparentRenderList(cullResults, hdCamera, renderContext, cmd, HDShaderPassNames.s_ForwardOnlyName, 0, HDRenderQueue.k_RenderQueue_AfterPostProcessTransparent);
+                cmd.SetGlobalInt(HDShaderIDs._OffScreenRendering, 0);
             }
         }
 
