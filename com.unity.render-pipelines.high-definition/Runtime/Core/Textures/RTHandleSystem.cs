@@ -63,6 +63,7 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
             }
         }
 
+        // XRTODO: move this function somewhere else?
         private VRTextureUsage OverrideRenderTexture2DX(bool xrInstancing, ref TextureDimension dimension, ref int slices)
         {
             if (xrInstancing && ShaderConfig.s_UseArrayForTexture2DX != 0)
@@ -72,7 +73,8 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
 
                 if (XRGraphics.stereoRenderingMode == XRGraphics.StereoRenderingMode.SinglePassInstanced)
                 {
-                    slices = XRGraphics.eyeCount;
+                    Debug.Assert(slices > 0);
+                    slices *= XRGraphics.eyeCount;
 
                     // XRTODO: add validation, asserts
                     return XRGraphics.eyeTextureDesc.vrUsage;
