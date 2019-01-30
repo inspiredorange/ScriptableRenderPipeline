@@ -3,9 +3,6 @@ Shader "Hidden/HDRP/DebugViewRayCount"
     Properties
     {
         _CameraColorTexture("_CameraColorTexture", 2D) = "white" {}
-		_TotalAORaysTex("_TotalAORaysTex", 2D) = "black" {}
-		_TotalReflectionRaysTex("_TotalReflectionRaysTex", 2D) = "black" {}
-		_TotalAreaShadowRaysTex("_TotalAreaShadowRaysTex", 2D) = "black" {}
         _FontColor("_FontColor", Color) = (1,1,1,1)
     }
         SubShader
