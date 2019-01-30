@@ -50,7 +50,7 @@ TEXTURE2D(_TileMaxNeighbourhood);
 // This however also can cause the blur to look slightly different. 
 #define GUERTIN2014_DOUBLE_DIR 0
 #define DOT_WEIGHTING 1
-#define DOT_MULTIPLIER 2 * DOT_WEIGHTING
+#define DOT_MULTIPLIER 1 * DOT_WEIGHTING
 
 // ---------------------------------------------
 // Misc utils
