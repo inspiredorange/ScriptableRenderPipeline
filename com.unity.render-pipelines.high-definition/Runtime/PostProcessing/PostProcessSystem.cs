@@ -1992,12 +1992,7 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
             );
 
             // Blit to backbuffer
-            Rect backBufferRect = camera.viewport;
-            if(swDynamicResIsOn)
-            {
-                backBufferRect.width = dynResHandler.cachedOriginalSize.x;
-                backBufferRect.height = dynResHandler.cachedOriginalSize.y;
-            }
+            Rect backBufferRect = camera.finalViewport;
 
             // When flipY == false, post process is not rendering into the final target so we need to render at (0,0) for subsequent passes to work.
             if (!flipY)

@@ -316,24 +316,6 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
             BlitTexture(cmd, source, destination, camera.viewportScale, mipLevel, bilinear);
         }
 
-        // This particular case is for blitting a camera-scaled texture into a non scaling texture. So we setup the full viewport (implicit in cmd.Blit) but have to scale the input UVs.
-        public static void BlitFinalCameraTexture(CommandBuffer cmd, HDCamera camera, RTHandleSystem.RTHandle source, RenderTargetIdentifier destination, bool flip = false)
-        {
-            var scaleBias = new Vector4(camera.viewportScale.x, camera.viewportScale.y, 0.0f, 0.0f);
-            var offset = Vector2.zero;
-
-            if (flip)
-            {
-                scaleBias.w = scaleBias.y;
-                scaleBias.y *= -1;
-            }
-
-            s_PropertyBlock.SetTexture(HDShaderIDs._BlitTexture, source);
-            s_PropertyBlock.SetVector(HDShaderIDs._BlitScaleBias, scaleBias);
-            s_PropertyBlock.SetFloat(HDShaderIDs._BlitMipLevel, 0);
-            DrawFullScreen(cmd, camera.viewport, GetBlitMaterial(), destination, s_PropertyBlock, 0);
-        }
-
         public static void BlitCameraTextureStereoDoubleWide(CommandBuffer cmd, RTHandleSystem.RTHandle source, RenderTargetIdentifier destination)
         {
             var mat = GetBlitMaterial();
