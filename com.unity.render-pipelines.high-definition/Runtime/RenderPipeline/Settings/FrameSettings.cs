@@ -263,6 +263,7 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
             bool preview = HDUtils.IsRegularPreviewCamera(camera);
             bool sceneViewFog = CoreUtils.IsSceneViewFogEnabled(camera);
             bool stereo = camera.stereoEnabled;
+            bool stereoDoubleWide = stereo && (XRGraphics.stereoRenderingMode == XRGraphics.StereoRenderingMode.SinglePass);
 
             // When rendering reflection probe we disable specular as it is view dependent
             sanitazedFrameSettings.bitDatas[(int)FrameSettingsField.Reflection] = !reflection;
@@ -302,7 +303,7 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
 
             // No recursive reflections
             // XRTODO: implement SSR support
-            sanitazedFrameSettings.bitDatas[(int)FrameSettingsField.SSR] &= !reflection && renderPipelineSettings.supportSSR && !msaa && !preview && XRGraphics.stereoRenderingMode != XRGraphics.StereoRenderingMode.SinglePass;
+            sanitazedFrameSettings.bitDatas[(int)FrameSettingsField.SSR] &= !reflection && renderPipelineSettings.supportSSR && !msaa && !preview && !stereoDoubleWide;
             sanitazedFrameSettings.bitDatas[(int)FrameSettingsField.SSAO] &= renderPipelineSettings.supportSSAO && !preview;
             sanitazedFrameSettings.bitDatas[(int)FrameSettingsField.SubsurfaceScattering] &= !reflection && renderPipelineSettings.supportSubsurfaceScattering;
 
@@ -318,7 +319,7 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
             sanitazedFrameSettings.bitDatas[(int)FrameSettingsField.ExposureControl] &= !reflection;
 
             // Planar and real time cubemap doesn't need post process and render in FP16
-            bool postprocess = sanitazedFrameSettings.bitDatas[(int)FrameSettingsField.Postprocess] &= !reflection && !preview && XRGraphics.stereoRenderingMode != XRGraphics.StereoRenderingMode.SinglePass;
+            bool postprocess = sanitazedFrameSettings.bitDatas[(int)FrameSettingsField.Postprocess] &= !reflection && !preview && !stereoDoubleWide;
 
             sanitazedFrameSettings.bitDatas[(int)FrameSettingsField.TransparentPrepass] &= renderPipelineSettings.supportTransparentDepthPrepass && !preview;
 
