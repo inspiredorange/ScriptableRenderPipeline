@@ -121,10 +121,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Micro-shadowing in Lit forward now use ambientOcclusion instead of SpecularOcclusion
 - Upgraded FrameSettings workflow, DebugMenu and Inspector part relative to it
 - Update build light list shader code to support 32 threads in wavefronts on Switch
-- Rename SampleCameraDepth() functions to LoadCameraDepth() and SampleCameraDepth()
 - LayeredLit layers' foldout are now grouped in one main foldout per layer
 - Shadow alpha clip can now be enabled on lit shader and haor shader enven for opaque
 - Parameter depthSlice on SetRenderTarget functions now defaults to -1 to bind the entire resource
+- Rename SampleCameraDepth() functions to LoadCameraDepth() and SampleCameraDepth(), same for SampleCameraColor() functions
 
 ## [5.2.0-preview] - 2018-11-27
 
