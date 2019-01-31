@@ -211,6 +211,8 @@ void TileNeighbourhood(uint3 dispatchID : SV_DispatchThreadID, uint gid : SV_Gro
     int2 id = dispatchID.xy;
     int2 maxCoords = int2(_TileTargetSize.xy - 1);
 
+    if (any(id > maxCoords)) return;
+
     // Sample the velocity at this tile.
     uint packedTileInfo = _TileToScatterMax[id];
     uint minVel = _TileToScatterMin[id];
