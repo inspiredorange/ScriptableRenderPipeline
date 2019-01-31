@@ -3125,7 +3125,10 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
 
         RTHandleSystem.RTHandle GetAfterPostProcessOffScreenBuffer()
         {
-            return m_GbufferManager.GetBuffer(0);
+            if (renderPipelineSettings.supportedLitShaderMode == RenderPipelineSettings.SupportedLitShaderMode.ForwardOnly)
+                return m_SSSBufferManager.GetSSSBuffer(0);
+            else
+                return m_GbufferManager.GetBuffer(0);
         }
 
 
