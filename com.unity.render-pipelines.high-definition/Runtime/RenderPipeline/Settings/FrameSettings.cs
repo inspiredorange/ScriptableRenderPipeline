@@ -300,8 +300,8 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
             // TODO: The work will be implemented piecemeal to support all passes
             bool msaa = sanitazedFrameSettings.bitDatas[(int)FrameSettingsField.MSAA] &= renderPipelineSettings.supportMSAA && sanitazedFrameSettings.litShaderMode == LitShaderMode.Forward;
 
-            // VR TODO: The work will be implemented piecemeal to support all passes
             // No recursive reflections
+            // XRTODO: implement SSR support
             sanitazedFrameSettings.bitDatas[(int)FrameSettingsField.SSR] &= !reflection && renderPipelineSettings.supportSSR && !msaa && !preview && !stereo;
             sanitazedFrameSettings.bitDatas[(int)FrameSettingsField.SSAO] &= renderPipelineSettings.supportSSAO && !preview;
             sanitazedFrameSettings.bitDatas[(int)FrameSettingsField.SubsurfaceScattering] &= !reflection && renderPipelineSettings.supportSubsurfaceScattering;
@@ -310,14 +310,15 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
             bool atmosphericScattering = sanitazedFrameSettings.bitDatas[(int)FrameSettingsField.AtmosphericScattering] &= sceneViewFog && !preview;
 
             // Volumetric are disabled if there is no atmospheric scattering
-            sanitazedFrameSettings.bitDatas[(int)FrameSettingsField.Volumetrics] &= renderPipelineSettings.supportVolumetrics && atmosphericScattering; //&& !preview induced by atmospheric scattering
+            // XRTODO: implement Volumetrics support
+            sanitazedFrameSettings.bitDatas[(int)FrameSettingsField.Volumetrics] &= renderPipelineSettings.supportVolumetrics && atmosphericScattering && !stereo; //&& !preview induced by atmospheric scattering
             sanitazedFrameSettings.bitDatas[(int)FrameSettingsField.ReprojectionForVolumetrics] &= !preview;
             
             sanitazedFrameSettings.bitDatas[(int)FrameSettingsField.LightLayers] &= renderPipelineSettings.supportLightLayers && !preview;
             sanitazedFrameSettings.bitDatas[(int)FrameSettingsField.ExposureControl] &= !reflection;
 
             // Planar and real time cubemap doesn't need post process and render in FP16
-            bool postprocess = sanitazedFrameSettings.bitDatas[(int)FrameSettingsField.Postprocess] &= !reflection && !preview;
+            bool postprocess = sanitazedFrameSettings.bitDatas[(int)FrameSettingsField.Postprocess] &= !reflection && !preview && XRGraphics.stereoRenderingMode != XRGraphics.StereoRenderingMode.SinglePass;
 
             sanitazedFrameSettings.bitDatas[(int)FrameSettingsField.TransparentPrepass] &= renderPipelineSettings.supportTransparentDepthPrepass && !preview;
 
