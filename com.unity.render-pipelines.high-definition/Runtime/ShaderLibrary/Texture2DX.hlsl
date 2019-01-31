@@ -88,9 +88,6 @@
         static uint unity_StereoEyeIndex;
     #elif defined(UNITY_SINGLE_PASS_STEREO) // XRTODO: remove once SinglePassInstanced is working
         #if SHADER_STAGE_COMPUTE
-            // Currently the Unity engine doesn't automatically update stereo indices, offsets, and matrices for compute shaders.
-            // Instead, we manually update _ComputeEyeIndex in SRP code. 
-            #define unity_StereoEyeIndex _ComputeEyeIndex
         #else
             CBUFFER_START(UnityStereoEyeIndex)
                 int unity_StereoEyeIndex;
