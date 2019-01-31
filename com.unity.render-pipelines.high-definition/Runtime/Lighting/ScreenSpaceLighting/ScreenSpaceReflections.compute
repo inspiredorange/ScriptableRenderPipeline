@@ -81,8 +81,11 @@ void WriteDebugInfo(uint2 positionSS, float4 value)
 #ifdef SSR_TRACE
 
 [numthreads(8, 8, 1)]
-void ScreenSpaceReflectionsTracing(uint2 positionSS : SV_DispatchThreadID)
+void ScreenSpaceReflectionsTracing(uint3 dispatchThreadId : SV_DispatchThreadID)
 {
+    UNITY_STEREO_ASSIGN_COMPUTE_EYE_INDEX(dispatchThreadId.z);
+    uint2 positionSS = dispatchThreadId.xy;
+
 #ifdef SSR_USE_STENCIL
     uint stencilVal = UnpackByte(LOAD_TEXTURE2DX(_StencilTexture, positionSS).r);
     bool doesntReceiveSSR = (stencilVal & _SsrStencilExclusionValue) != 0;
@@ -284,8 +287,11 @@ float RoughnessFade(float roughness, float fadeRcpLength, float fadeEndTimesRcpL
 }
 
 [numthreads(8, 8, 1)]
-void ScreenSpaceReflectionsReprojection(uint2 positionSS : SV_DispatchThreadID)
+void ScreenSpaceReflectionsReprojection(uint3 dispatchThreadId : SV_DispatchThreadID)
 {
+    UNITY_STEREO_ASSIGN_COMPUTE_EYE_INDEX(dispatchThreadId.z);
+    uint2 positionSS = dispatchThreadId.xy;
+
     // TODO: this texture is sparse (mostly black). Can we avoid reading every texel? How about using Hi-S?
     float2 hitPositionNDC = LOAD_TEXTURE2DX(_SsrHitPointTexture, positionSS).xy;
 
