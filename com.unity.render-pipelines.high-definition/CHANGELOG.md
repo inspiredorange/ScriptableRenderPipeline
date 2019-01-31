@@ -44,6 +44,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Added xrInstancing flag support to RTHandle
 - Added support for cullmask for decal projectors
 - Added software dynamic resolution support
+- Added fade factor for decal projectors.
 
 ### Fixed
 - Fixed logic to disable FPTL with stereo rendering
