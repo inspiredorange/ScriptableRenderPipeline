@@ -1994,8 +1994,9 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
             // Blit to backbuffer
             Rect backBufferRect = camera.finalViewport;
 
-            // When flipY == false, post process is not rendering into the final target so we need to render at (0,0) for subsequent passes to work.
-            if (!flipY)
+            // When post process is not the final pass, we render at (0,0) so that subsequent rendering does not have to bother about viewports.
+            // Final viewport is handled in the final blit in this case
+            if (!HDUtils.PostProcessIsFinalPass())
             {
                 backBufferRect.x = backBufferRect.y = 0;
             }

@@ -93,7 +93,10 @@ Shader "Hidden/HDRP/FinalPass"
             RunFXAA(_InputTexture, sampler_LinearClamp, outColor, positionSS, positionNDC);
             #endif
 
+            // Saturate is only needed for dither or grain to work. Otherwise we don't saturate because output might be HDR
+#if defined(GRAIN) || defined(DITHER)
             outColor = saturate(outColor);
+#endif
 
             #if GRAIN
             {
