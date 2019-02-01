@@ -1243,8 +1243,8 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
             Vector4 motionBlurParams0 = new Vector4(
                 screenMagnitude,
                 screenMagnitude * screenMagnitude,
-                m_MotionBlur.minVelInPixels,
-                m_MotionBlur.minVelInPixels * m_MotionBlur.minVelInPixels
+                m_MotionBlur.minVel,
+                m_MotionBlur.minVel * m_MotionBlur.minVel
             );
 
 
